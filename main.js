@@ -45,26 +45,23 @@ const width = 300;
 const height = 300;
 
 const pathArray = [];
-const p1 = new THREE.Vector3(0, 0, 0);
-const p2 = new THREE.Vector3(width, 0, 0);
-const p3 = new THREE.Vector3(width, height, 0);
-const p4 = new THREE.Vector3(0, height, 0);
-pathArray.push(new THREE.LineCurve3(p1, p2))
-pathArray.push(new THREE.LineCurve3(p2, p3))
-pathArray.push(new THREE.LineCurve3(p3, p4))
-pathArray.push(new THREE.LineCurve3(p4, p1))
+const p1 = new THREE.Vector3(0,0,0);
+const p2 = new THREE.Vector3(width,0,0);
+const p3 = new THREE.Vector3(width,height,0);
+const p4 = new THREE.Vector3(0,height,0);
 
-pathArray.forEach((edge, index) => {
-    // if(index != 0) return;
-    const extrudeSettings = {
+pathArray.push(new THREE.LineCurve3(p1,p2));
+pathArray.push(new THREE.LineCurve3(p2,p3));
+pathArray.push(new THREE.LineCurve3(p3,p4));
+pathArray.push(new THREE.LineCurve3(p4,p1));
+
+pathArray.forEach((edge,index) => {
+    const geometry = new THREE.ExtrudeGeometry(createFrameShape(),{
         bevelEnabled: false,
         extrudePath: edge
-    }
-    const outerShape = createFrameShape();
-    const geometry = new THREE.ExtrudeGeometry( outerShape, extrudeSettings );
-
-    const material = new THREE.MeshStandardMaterial( { color: "#ff0000"} );
-    const mesh = new THREE.Mesh( geometry, material ) ;
+    });
+    const material = new THREE.MeshStandardMaterial({color:'#713737'})
+    const mesh = new THREE.Mesh(geometry,material);
     scene.add(mesh);
 });
 
