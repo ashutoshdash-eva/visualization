@@ -10,7 +10,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
-camera.position.set(40, 25, 100);
+camera.position.set(217, 135, 543);
 
 
 function createFrameShape(w = 50, h = 50, h1 = 15) {
@@ -41,8 +41,8 @@ function createBeadShape(w = 25, h = 35, t = 3, r = 12) {
     return shape;
 }
 
-const width = 300;
-const height = 300;
+const width = 500;
+const height = 700;
 
 const pathArray = [];
 const p1 = new THREE.Vector3(0,0,0);
@@ -56,14 +56,69 @@ pathArray.push(new THREE.LineCurve3(p3,p4));
 pathArray.push(new THREE.LineCurve3(p4,p1));
 
 pathArray.forEach((edge,index) => {
+    // if (index != 2) return;
     const geometry = new THREE.ExtrudeGeometry(createFrameShape(),{
         bevelEnabled: false,
         extrudePath: edge
     });
-    const material = new THREE.MeshStandardMaterial({color:'#713737'})
+    const material = new THREE.MeshStandardMaterial({color:'#713737', wireframe:true})
+    //#region VERTEX MANIPULATION
+    console.log(geometry.attributes.position);
+    const pos = geometry.attributes.position;
+    if(index === 0){
+        for (let i = 0; i < pos.count; i++){
+            let x = pos.getX(i);
+            let y = pos.getY(i);
+            if(x === 0){
+                pos.setX(i,y);
+            }
+            if(x === width){
+                pos.setX(i,width-y);
+            }
+        };
+    };
+    if(index === 1){
+        for (let i = 0; i < pos.count; i++){
+            let x = pos.getX(i);
+            let y = pos.getY(i);
+            if(y === 0){
+                pos.setY(i,width-x);
+            };
+            if(y === height){
+                pos.setY(i,height-(width-x));
+            }
+            
+        }
+    }
+    if(index === 2){
+        for (let i = 0; i < pos.count; i++){
+            let x = pos.getX(i);
+            let y = pos.getY(i);
+            if(x === 0){
+                pos.setX(i,height-y);
+            }
+            if(x === width){
+                pos.setX(i,width-(height-y));
+            }
+        }
+    }
+    if(index === 3){
+        for (let i = 0; i < pos.count; i++){
+            let x = pos.getX(i);
+            let y = pos.getY(i);
+            if(y === 0){
+                pos.setY(i,x);
+            }
+            if(y === height){
+                pos.setY(i,height-x);
+            }
+        }
+    }
     const mesh = new THREE.Mesh(geometry,material);
     scene.add(mesh);
+    //#endregion
 });
+
 
 const grdHlp = new THREE.GridHelper(500, 500);
 scene.add(grdHlp);
@@ -90,3 +145,6 @@ function animate() {
 }
 
 animate();
+
+console.log(camera.position);
+
