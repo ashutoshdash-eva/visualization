@@ -10,7 +10,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
-camera.position.set(217, 135, 543);
+camera.position.set(100, 300, 200);
 
 
 function createFrameShape(w = 50, h = 50, h1 = 15) {
@@ -43,80 +43,119 @@ function createBeadShape(w = 25, h = 35, t = 3, r = 12) {
 
 const width = 500;
 const height = 700;
+const offset = 15;
+const beadWidth = width - 2 * offset;
+const beadHeight = height - 2 * offset;
+const beadOffset = 35;
 
+//#region Frame
 const pathArray = [];
-const p1 = new THREE.Vector3(0,0,0);
-const p2 = new THREE.Vector3(width,0,0);
-const p3 = new THREE.Vector3(width,height,0);
-const p4 = new THREE.Vector3(0,height,0);
+const p1 = new THREE.Vector3(0, 0, 0);
+const p2 = new THREE.Vector3(width, 0, 0);
+const p3 = new THREE.Vector3(width, height, 0);
+const p4 = new THREE.Vector3(0, height, 0);
 
-pathArray.push(new THREE.LineCurve3(p1,p2));
-pathArray.push(new THREE.LineCurve3(p2,p3));
-pathArray.push(new THREE.LineCurve3(p3,p4));
-pathArray.push(new THREE.LineCurve3(p4,p1));
+pathArray.push(new THREE.LineCurve3(p1, p2));
+pathArray.push(new THREE.LineCurve3(p2, p3));
+pathArray.push(new THREE.LineCurve3(p3, p4));
+pathArray.push(new THREE.LineCurve3(p4, p1));
+//#endregion
 
-pathArray.forEach((edge,index) => {
+//#region Bead
+const bp1 = new THREE.Vector3(offset,offset,0);
+const bp2 = new THREE.Vector3(offset+beadWidth,offset,0);
+const bp3 = new THREE.Vector3(offset+beadWidth,offset+beadHeight,0);
+const bp4 = new THREE.Vector3(offset,offset+beadHeight,0);
+
+const beadPathArray = [
+    new THREE.LineCurve3(bp1,bp2),
+    new THREE.LineCurve3(bp2,bp3),
+    new THREE.LineCurve3(bp3,bp4),
+    new THREE.LineCurve3(bp4,bp1)
+]
+//#endregion
+
+
+//#region Frame CVM
+pathArray.forEach((edge, index) => {
     // if (index != 2) return;
-    const geometry = new THREE.ExtrudeGeometry(createFrameShape(),{
+    const geometry = new THREE.ExtrudeGeometry(createFrameShape(), {
         bevelEnabled: false,
         extrudePath: edge
     });
-    const material = new THREE.MeshStandardMaterial({color:'#713737', wireframe:true})
-    //#region VERTEX MANIPULATION
+    const material = new THREE.MeshStandardMaterial({ color: '#5a3e2b'})
     console.log(geometry.attributes.position);
     const pos = geometry.attributes.position;
-    if(index === 0){
-        for (let i = 0; i < pos.count; i++){
-            let x = pos.getX(i);
-            let y = pos.getY(i);
-            if(x === 0){
-                pos.setX(i,y);
-            }
-            if(x === width){
-                pos.setX(i,width-y);
-            }
-        };
-    };
-    if(index === 1){
-        for (let i = 0; i < pos.count; i++){
-            let x = pos.getX(i);
-            let y = pos.getY(i);
-            if(y === 0){
-                pos.setY(i,width-x);
-            };
-            if(y === height){
-                pos.setY(i,height-(width-x));
-            }
-            
+    for(let i = 0; i < pos.count; i++){
+        let x = pos.getX(i);
+        let y = pos.getY(i);
+
+        if(index === 0){
+            if (x === 0) pos.setX(i,y);
+            else if (x === width) pos.setX(i, width - y);
+        }
+        else if(index === 1){
+            if (y === 0) pos.setY(i,width-x);
+            else if (y === height) pos.setY(i,height-(width-x));
+        }
+        else if(index === 2){
+            if (x === 0) pos.setX(i,height-y);
+            else if (x === width) pos.setX(i,width-(height-y));
+        }
+        else if(index === 3){
+            if(y === 0) pos.setY(i,x);
+            else if (y === height) pos.setY(i,height-x);
         }
     }
-    if(index === 2){
-        for (let i = 0; i < pos.count; i++){
-            let x = pos.getX(i);
-            let y = pos.getY(i);
-            if(x === 0){
-                pos.setX(i,height-y);
-            }
-            if(x === width){
-                pos.setX(i,width-(height-y));
-            }
+    
+    pos.needsUpdate = true;
+    geometry.computeVertexNormals();
+
+    const edges = new THREE.EdgesGeometry(geometry);
+    const line = new THREE.LineSegments(edges,new THREE.LineBasicMaterial({color:'#3e2a1f'}));
+    scene.add(line);
+    const mesh = new THREE.Mesh(geometry,material);
+    // if(index === 0)
+    // // mesh.position.z += 100;
+    scene.add(mesh);
+});
+//#endregion
+
+
+//#region Bead CVM
+beadPathArray.forEach((edge,index) => {
+    const geometry = new THREE.ExtrudeGeometry(createBeadShape(),{
+        bevelEnabled: false,
+        extrudePath: edge,
+        curveSegments:120
+    });
+    const material = new THREE.MeshStandardMaterial({color:'#f2e8dc'});
+    
+    const pos = geometry.attributes.position;
+    for(let i = 0; i < pos.count; i++){
+        const x = pos.getX(i);
+        const y = pos.getY(i);
+        
+        if (index === 0){
+            if(x === offset) pos.setX(i,x+beadOffset);
+            else if(x === offset+beadWidth) pos.setX(i,(offset+beadWidth)-beadOffset);
         }
-    }
-    if(index === 3){
-        for (let i = 0; i < pos.count; i++){
-            let x = pos.getX(i);
-            let y = pos.getY(i);
-            if(y === 0){
-                pos.setY(i,x);
-            }
-            if(y === height){
-                pos.setY(i,height-x);
-            }
+        else if (index === 2){
+            if(x === offset) pos.setX(i,x+beadOffset);
+            else if(x === offset+beadWidth) pos.setX(i,(offset+beadWidth)-beadOffset);
         }
+        
     }
+    //#endregion
+
+    pos.needsUpdate = true;
+    geometry.computeVertexNormals();
+
+    const edges = new THREE.EdgesGeometry(geometry);
+    const line = new THREE.LineSegments(edges,new THREE.LineBasicMaterial({color:'#3e2a1f'}));
+    scene.add(line);
     const mesh = new THREE.Mesh(geometry,material);
     scene.add(mesh);
-    //#endregion
 });
 
 
@@ -130,7 +169,37 @@ const dirLight = new THREE.DirectionalLight(0xffffff, 5);
 dirLight.position.set(500, 1000, 1000);
 scene.add(dirLight);
 
-console.time("jhbvjhgvjh")
+console.time("jhbvjhgvjh");
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+const frameMeshes = [];
+const beadMeshes = [];
+
+window.addEventListener('pointerdown',(event) => {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse,camera);
+
+    const intersects = raycaster.intersectObjects(beadPathArray);
+
+    if(intersects.length > 0){
+        const clickedMesh = intersects[0].object;
+        // clickedMesh.material.color.set('#111111');
+        beadPathArray.forEach((mesh) => {
+            if(mesh == clickedMesh){
+                mesh.material.color.set("#00ffff")
+            }
+            else{
+                mesh.material.color.set("#0400ff")
+            }
+        });
+
+    };
+
+})
 
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -147,4 +216,6 @@ function animate() {
 animate();
 
 console.log(camera.position);
+
+console.log(scene.children);
 
