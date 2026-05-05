@@ -10,7 +10,8 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
-camera.position.set(100, 300, 200);
+camera.position.set(251, 331, 487);
+// camera.lookAt(250,350,0);
 
 const frameMeshes = [];
 const beadMeshes = [];
@@ -24,7 +25,7 @@ function createFrameShape(w = 50, h = 50, h1 = 15) {
     shape.lineTo(w - h1, h1);
     shape.lineTo(0, h1);
     shape.lineTo(0, 0);
-
+    
     return shape;
 }
 
@@ -39,7 +40,7 @@ function createBeadShape(w = 25, h = 35, t = 3, r = 12) {
     shape.lineTo(t + r, h);
     shape.absarc(t + r, h - (t + r), r + t, Math.PI / 2, Math.PI, false);
     shape.lineTo(0, 0);
-
+    
     return shape;
 }
 
@@ -49,6 +50,7 @@ const offset = 15;
 const beadWidth = width - 2 * offset;
 const beadHeight = height - 2 * offset;
 const beadOffset = 35;
+controls.target.set(width/2,height/2,0);
 
 //#region Frame
 const pathArray = [];
@@ -86,7 +88,7 @@ pathArray.forEach((edge, index) => {
         extrudePath: edge
     });
     const material = new THREE.MeshStandardMaterial({ color: '#5a3e2b' })
-    console.log(geometry.attributes.position);
+    // console.log(geometry.attributes.position);
     const pos = geometry.attributes.position;
     for (let i = 0; i < pos.count; i++) {
         let x = pos.getX(i);
@@ -186,7 +188,7 @@ const mouse = new THREE.Vector2();
 const originalFrameColor = new THREE.Color('#5a3e2b');
 const originalBeadColor = new THREE.Color('#f2e8dc');
 
-window.addEventListener('click', (event) => {
+window.addEventListener('dblclick', (event) => {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
@@ -249,11 +251,15 @@ function animate() {
     requestAnimationFrame(animate);
     controls.update();
     renderer.render(scene, camera);
+    // console.log(camera.position);
+    // // console.log(camera.lookAt);
+    // // console.log(camera);
+    // console.log(controls.target);
 }
 
 animate();
 
-// console.log(camera.position);
+console.log(camera.position);
 
 // console.log(scene.children);
 
