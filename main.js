@@ -12,6 +12,8 @@ document.body.appendChild(renderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 camera.position.set(100, 300, 200);
 
+const frameMeshes = [];
+const beadMeshes = [];
 
 function createFrameShape(w = 50, h = 50, h1 = 15) {
     const shape = new THREE.Shape();
@@ -62,16 +64,16 @@ pathArray.push(new THREE.LineCurve3(p4, p1));
 //#endregion
 
 //#region Bead
-const bp1 = new THREE.Vector3(offset,offset,0);
-const bp2 = new THREE.Vector3(offset+beadWidth,offset,0);
-const bp3 = new THREE.Vector3(offset+beadWidth,offset+beadHeight,0);
-const bp4 = new THREE.Vector3(offset,offset+beadHeight,0);
+const bp1 = new THREE.Vector3(offset, offset, 0);
+const bp2 = new THREE.Vector3(offset + beadWidth, offset, 0);
+const bp3 = new THREE.Vector3(offset + beadWidth, offset + beadHeight, 0);
+const bp4 = new THREE.Vector3(offset, offset + beadHeight, 0);
 
 const beadPathArray = [
-    new THREE.LineCurve3(bp1,bp2),
-    new THREE.LineCurve3(bp2,bp3),
-    new THREE.LineCurve3(bp3,bp4),
-    new THREE.LineCurve3(bp4,bp1)
+    new THREE.LineCurve3(bp1, bp2),
+    new THREE.LineCurve3(bp2, bp3),
+    new THREE.LineCurve3(bp3, bp4),
+    new THREE.LineCurve3(bp4, bp1)
 ]
 //#endregion
 
@@ -83,68 +85,71 @@ pathArray.forEach((edge, index) => {
         bevelEnabled: false,
         extrudePath: edge
     });
-    const material = new THREE.MeshStandardMaterial({ color: '#5a3e2b'})
+    const material = new THREE.MeshStandardMaterial({ color: '#5a3e2b' })
     console.log(geometry.attributes.position);
     const pos = geometry.attributes.position;
-    for(let i = 0; i < pos.count; i++){
+    for (let i = 0; i < pos.count; i++) {
         let x = pos.getX(i);
         let y = pos.getY(i);
 
-        if(index === 0){
-            if (x === 0) pos.setX(i,y);
+        if (index === 0) {
+            if (x === 0) pos.setX(i, y);
             else if (x === width) pos.setX(i, width - y);
         }
-        else if(index === 1){
-            if (y === 0) pos.setY(i,width-x);
-            else if (y === height) pos.setY(i,height-(width-x));
+        else if (index === 1) {
+            if (y === 0) pos.setY(i, width - x);
+            else if (y === height) pos.setY(i, height - (width - x));
         }
-        else if(index === 2){
-            if (x === 0) pos.setX(i,height-y);
-            else if (x === width) pos.setX(i,width-(height-y));
+        else if (index === 2) {
+            if (x === 0) pos.setX(i, height - y);
+            else if (x === width) pos.setX(i, width - (height - y));
         }
-        else if(index === 3){
-            if(y === 0) pos.setY(i,x);
-            else if (y === height) pos.setY(i,height-x);
+        else if (index === 3) {
+            if (y === 0) pos.setY(i, x);
+            else if (y === height) pos.setY(i, height - x);
         }
     }
-    
+
     pos.needsUpdate = true;
     geometry.computeVertexNormals();
 
     const edges = new THREE.EdgesGeometry(geometry);
-    const line = new THREE.LineSegments(edges,new THREE.LineBasicMaterial({color:'#3e2a1f'}));
+    const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: '#3e2a1f' }));
     scene.add(line);
-    const mesh = new THREE.Mesh(geometry,material);
+    const mesh = new THREE.Mesh(geometry, material);
     // if(index === 0)
     // // mesh.position.z += 100;
     scene.add(mesh);
+
+    frameMeshes.push(mesh);
+
 });
 //#endregion
 
 
 //#region Bead CVM
-beadPathArray.forEach((edge,index) => {
-    const geometry = new THREE.ExtrudeGeometry(createBeadShape(),{
+beadPathArray.forEach((edge, index) => {
+    const geometry = new THREE.ExtrudeGeometry(createBeadShape(), {
         bevelEnabled: false,
         extrudePath: edge,
-        curveSegments:120
+        curveSegments: 120
     });
-    const material = new THREE.MeshStandardMaterial({color:'#f2e8dc'});
-    
+    const material = new THREE.MeshStandardMaterial({ color: '#f2e8dc' });
+
     const pos = geometry.attributes.position;
-    for(let i = 0; i < pos.count; i++){
+    for (let i = 0; i < pos.count; i++) {
         const x = pos.getX(i);
         const y = pos.getY(i);
-        
-        if (index === 0){
-            if(x === offset) pos.setX(i,x+beadOffset);
-            else if(x === offset+beadWidth) pos.setX(i,(offset+beadWidth)-beadOffset);
+
+        if (index === 0) {
+            if (x === offset) pos.setX(i, x + beadOffset);
+            else if (x === offset + beadWidth) pos.setX(i, (offset + beadWidth) - beadOffset);
         }
-        else if (index === 2){
-            if(x === offset) pos.setX(i,x+beadOffset);
-            else if(x === offset+beadWidth) pos.setX(i,(offset+beadWidth)-beadOffset);
+        else if (index === 2) {
+            if (x === offset) pos.setX(i, x + beadOffset);
+            else if (x === offset + beadWidth) pos.setX(i, (offset + beadWidth) - beadOffset);
         }
-        
+
     }
     //#endregion
 
@@ -152,10 +157,12 @@ beadPathArray.forEach((edge,index) => {
     geometry.computeVertexNormals();
 
     const edges = new THREE.EdgesGeometry(geometry);
-    const line = new THREE.LineSegments(edges,new THREE.LineBasicMaterial({color:'#3e2a1f'}));
+    const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: '#3e2a1f' }));
     scene.add(line);
-    const mesh = new THREE.Mesh(geometry,material);
+    const mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
+
+    beadMeshes.push(mesh);
 });
 
 
@@ -169,37 +176,68 @@ const dirLight = new THREE.DirectionalLight(0xffffff, 5);
 dirLight.position.set(500, 1000, 1000);
 scene.add(dirLight);
 
-console.time("jhbvjhgvjh");
+// console.time("jhbvjhgvjh");
 
+
+//#region Raycaster
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
-const frameMeshes = [];
-const beadMeshes = [];
+const originalFrameColor = new THREE.Color('#5a3e2b');
+const originalBeadColor = new THREE.Color('#f2e8dc');
 
-window.addEventListener('pointerdown',(event) => {
+window.addEventListener('click', (event) => {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    raycaster.setFromCamera(mouse,camera);
+    raycaster.setFromCamera(mouse, camera);
 
-    const intersects = raycaster.intersectObjects(beadPathArray);
+    const objectsToCheck = [...frameMeshes, ...beadMeshes];
+    const intersects = raycaster.intersectObjects(objectsToCheck);
 
-    if(intersects.length > 0){
+    if (intersects.length > 0) {
         const clickedMesh = intersects[0].object;
         // clickedMesh.material.color.set('#111111');
-        beadPathArray.forEach((mesh) => {
-            if(mesh == clickedMesh){
-                mesh.material.color.set("#00ffff")
-            }
-            else{
-                mesh.material.color.set("#0400ff")
-            }
+        if (frameMeshes.includes(clickedMesh)) {
+            frameMeshes.forEach((mesh) => {
+                if (mesh === clickedMesh) {
+                    mesh.material.color.set('#00ffff');
+                }
+                else {
+                    mesh.material.color.set('#0400ff');
+                }
+            });
+
+            beadMeshes.forEach((mesh) => {
+                mesh.material.color.set(originalBeadColor);
+            });
+        }
+        else if (beadMeshes.includes(clickedMesh)) {
+            beadMeshes.forEach((mesh) => {
+                if (mesh === clickedMesh) {
+                    mesh.material.color.set('#00ffff');
+                }
+                else {
+                    mesh.material.color.set('#0400ff');
+                }
+            });
+
+            frameMeshes.forEach((mesh) => {
+                mesh.material.color.set(originalFrameColor);
+            });
+        }
+    }
+    else {
+        frameMeshes.forEach((mesh) => {
+            mesh.material.color.set(originalFrameColor);
         });
+        beadMeshes.forEach((mesh) => {
+            mesh.material.color.set(originalBeadColor);
+        });
+    }
 
-    };
-
-})
+});
+//#endregion
 
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -215,7 +253,7 @@ function animate() {
 
 animate();
 
-console.log(camera.position);
+// console.log(camera.position);
 
-console.log(scene.children);
+// console.log(scene.children);
 
