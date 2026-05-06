@@ -120,11 +120,11 @@ pathArray.forEach((edge, index) => {
 
     const edges = new THREE.EdgesGeometry(geometry);
     const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: '#3e2a1f' }));
-    scene.add(line);
     const mesh = new THREE.Mesh(geometry, material);
     // if(index === 0)
     // // mesh.position.z += 100;
     scene.add(mesh);
+    mesh.add(line);
 
     frameMeshes.push(mesh);
 
@@ -185,9 +185,15 @@ beadPathArray.forEach((edge, index) => {
     const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: '#3e2a1f' }));
     mesh.add(line);
 
+    frameMeshes[index].add(mesh);
+
     beadMeshes.push(mesh);
+
+    
 });
 //#endregion
+
+// beadMeshes[0].position.z +=80
 
 const glassWidth = width - 2 * offset;
 const glassHeight = height - 2 * offset;
