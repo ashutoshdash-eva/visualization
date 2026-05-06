@@ -10,6 +10,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
 camera.position.set(251, 331, 487);
 // camera.lookAt(250,350,0);
 
@@ -25,11 +26,11 @@ function createFrameShape(w = 50, h = 50, h1 = 15) {
     shape.lineTo(w - h1, h1);
     shape.lineTo(0, h1);
     shape.lineTo(0, 0);
-    
+
     return shape;
 }
 
-function createBeadShape(w = 25, h = 35, t = 3, r = 12) {
+function createBeadShape(w = beadW, h = 35, t = 5, r = 12) {
     const shape = new THREE.Shape();
     shape.moveTo(0, 0);
     shape.lineTo(t, 0);
@@ -40,17 +41,19 @@ function createBeadShape(w = 25, h = 35, t = 3, r = 12) {
     shape.lineTo(t + r, h);
     shape.absarc(t + r, h - (t + r), r + t, Math.PI / 2, Math.PI, false);
     shape.lineTo(0, 0);
-    
+
     return shape;
 }
 
+const frameW = 50;
+const beadW = 25;
 const width = 500;
 const height = 700;
 const offset = 15;
 const beadWidth = width - 2 * offset;
 const beadHeight = height - 2 * offset;
 const beadOffset = 35;
-controls.target.set(width/2,height/2,0);
+controls.target.set(width / 2, height / 2, 0);
 
 //#region Frame
 const pathArray = [];
@@ -66,17 +69,17 @@ pathArray.push(new THREE.LineCurve3(p4, p1));
 //#endregion
 
 //#region Bead
-const bp1 = new THREE.Vector3(offset, offset, 0);
-const bp2 = new THREE.Vector3(offset + beadWidth, offset, 0);
-const bp3 = new THREE.Vector3(offset + beadWidth, offset + beadHeight, 0);
-const bp4 = new THREE.Vector3(offset, offset + beadHeight, 0);
+// const bp1 = new THREE.Vector3(offset, offset, 0);
+// const bp2 = new THREE.Vector3(offset + beadWidth, offset, 0);
+// const bp3 = new THREE.Vector3(offset + beadWidth, offset + beadHeight, 0);
+// const bp4 = new THREE.Vector3(offset, offset + beadHeight, 0);
 
 const beadPathArray = [
-    new THREE.LineCurve3(bp1, bp2),
-    new THREE.LineCurve3(bp2, bp3),
-    new THREE.LineCurve3(bp3, bp4),
-    new THREE.LineCurve3(bp4, bp1)
-]
+    new THREE.LineCurve3(p1, p2),
+    new THREE.LineCurve3(p2, p3),
+    new THREE.LineCurve3(p3, p4),
+    new THREE.LineCurve3(p4, p1)
+];
 //#endregion
 
 
@@ -140,33 +143,70 @@ beadPathArray.forEach((edge, index) => {
 
     const pos = geometry.attributes.position;
     for (let i = 0; i < pos.count; i++) {
-        const x = pos.getX(i);
-        const y = pos.getY(i);
+        let x = pos.getX(i);
+        let y = pos.getY(i);
 
-        if (index === 0) {
-            if (x === offset) pos.setX(i, x + beadOffset);
-            else if (x === offset + beadWidth) pos.setX(i, (offset + beadWidth) - beadOffset);
+        if (index === 0 || index === 2) {
+            if (x === 0) {
+                pos.setX(i, offset + beadOffset);
+            } else if (x === width) {
+                pos.setX(i, width - (offset + beadOffset));
+            }
         }
-        else if (index === 2) {
-            if (x === offset) pos.setX(i, x + beadOffset);
-            else if (x === offset + beadWidth) pos.setX(i, (offset + beadWidth) - beadOffset);
+        if (index === 1 || index === 3) {
+            if (y === 0) {
+                pos.setY(i, offset);
+            } else if (y === height) {
+                pos.setY(i, height - offset);
+            }
         }
 
     }
-    //#endregion
 
     pos.needsUpdate = true;
     geometry.computeVertexNormals();
 
+    const mesh = new THREE.Mesh(geometry, material);
+
+    if (index === 0) {
+        mesh.position.y += offset;
+    } else if (index === 1) {
+        mesh.position.x -= offset;
+    } else if (index === 2) {
+        mesh.position.y = - offset;
+    } else if (index === 3) {
+        mesh.position.x += offset;
+    };
+
+    scene.add(mesh);
+
+
     const edges = new THREE.EdgesGeometry(geometry);
     const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: '#3e2a1f' }));
-    scene.add(line);
-    const mesh = new THREE.Mesh(geometry, material);
-    scene.add(mesh);
+    mesh.add(line);
 
     beadMeshes.push(mesh);
 });
+//#endregion
 
+const glassWidth = width - 2 * offset;
+const glassHeight = height - 2 * offset;
+const glassThickness = frameW - beadW - offset;
+const glassGeometry = new THREE.BoxGeometry(glassWidth,glassHeight,glassThickness);
+const glassMaterial = new THREE.MeshPhysicalMaterial({
+    color:'#94d8ff',
+    metalness:0.05,
+    roughness:0.05,
+    transmission:0.95,
+    thickness:glassThickness,
+    ior:1.5,
+    side:THREE.DoubleSide
+
+
+});
+const glassMesh = new THREE.Mesh(glassGeometry,glassMaterial);
+glassMesh.position.set(width/2,height/2,-beadW-(glassThickness/2));
+scene.add(glassMesh);
 
 const grdHlp = new THREE.GridHelper(500, 500);
 scene.add(grdHlp);
@@ -255,8 +295,7 @@ function animate() {
     // // console.log(camera.lookAt);
     // // console.log(camera);
     // console.log(controls.target);
-}
-
+};
 animate();
 
 console.log(camera.position);
