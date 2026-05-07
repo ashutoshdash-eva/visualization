@@ -1,5 +1,7 @@
 import * as THREE from 'three';
+import { FontLoader } from 'three/examples/jsm/Addons.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color('#f0f0f0')
@@ -189,30 +191,66 @@ beadPathArray.forEach((edge, index) => {
 
     beadMeshes.push(mesh);
 
-    
+
 });
 //#endregion
 
 // beadMeshes[0].position.z +=80
 
-const glassWidth = width - 2 * offset;
-const glassHeight = height - 2 * offset;
-const glassThickness = frameW - beadW - offset;
-const glassGeometry = new THREE.BoxGeometry(glassWidth,glassHeight,glassThickness);
+const glassWidth = width - 2 * offset - 0.2;
+const glassHeight = height - 2 * offset - 0.2;
+const glassThickness = frameW - beadW - offset - 1;
+const glassGeometry = new THREE.BoxGeometry(glassWidth, glassHeight, glassThickness);
 const glassMaterial = new THREE.MeshPhysicalMaterial({
-    color:'#94d8ff',
-    metalness:0.05,
-    roughness:0.05,
-    transmission:0.95,
-    thickness:glassThickness,
-    ior:1.5,
-    side:THREE.DoubleSide
-
-
+    color: '#d6e9f0',
+    metalness: 0.05,
+    roughness: 0.05,
+    transmission: 0.95,
+    thickness: glassThickness,
+    ior: 1,
+    dispersion: 5.0,
+    side: THREE.DoubleSide
 });
-const glassMesh = new THREE.Mesh(glassGeometry,glassMaterial);
-glassMesh.position.set(width/2,height/2,-beadW-(glassThickness/2));
+const glassMesh = new THREE.Mesh(glassGeometry, glassMaterial);
+glassMesh.position.set(width / 2, height / 2, -beadW - (glassThickness / 2) - 0.5);
 scene.add(glassMesh);
+
+// const loader = new FontLoader();
+// const font = await loader.loadAsync('./fonts/helvetiker_regular.typeface.json');
+// const txtGeometry = new TextGeometry('+',{
+//     font: font,
+//     size: 80,
+//     depth: 5,
+//     curveSegments: 12
+// });
+// const txtMaterial = new THREE.MeshStandardMaterial({color: '#000000'});
+// const txtMesh = new THREE.Mesh(txtGeometry,txtMaterial);
+// // txtGeometry.computeBoundingBox();
+// txtMesh.position.z += beadW;
+
+const points = new Float32Array([
+    -1, 0, 0, 1, 0, 0,
+    0, -1, 0, 0, 1, 0
+]);
+
+const geo = new THREE.BufferGeometry();
+geo.setAttribute('position', new THREE.BufferAttribute(points, 3));
+
+const mat = new THREE.LineBasicMaterial({
+    color: '#000000',
+});
+
+const plusSign = new THREE.LineSegments(geo, mat);
+
+plusSign.scale.set(50, 50, 1);
+
+plusSign.position.set(0, 0, glassThickness / 2 + 0.2);
+
+glassMesh.add(plusSign);
+
+// glassMesh.add(txtMesh);
+
+
 
 const grdHlp = new THREE.GridHelper(500, 500);
 scene.add(grdHlp);
@@ -243,48 +281,87 @@ window.addEventListener('dblclick', (event) => {
     const objectsToCheck = [...frameMeshes, ...beadMeshes];
     const intersects = raycaster.intersectObjects(objectsToCheck);
 
-    if (intersects.length > 0) {
-        const clickedMesh = intersects[0].object;
-        // clickedMesh.material.color.set('#111111');
-        if (frameMeshes.includes(clickedMesh)) {
-            frameMeshes.forEach((mesh) => {
-                if (mesh === clickedMesh) {
-                    mesh.material.color.set('#00ffff');
-                }
-                else {
-                    mesh.material.color.set('#0400ff');
-                }
-            });
+    // if (intersects.length > 0) {
+    //     const clickedMesh = intersects[0].object;
+    //     // clickedMesh.material.color.set('#111111');
+    //     if (frameMeshes.includes(clickedMesh)) {
+    //         frameMeshes.forEach((mesh) => {
+    //             if (mesh === clickedMesh) {
+    //                 mesh.material.color.set('#00ffff');
+    //             }
+    //             else {
+    //                 mesh.material.color.set('#0400ff');
+    //             }
+    //         });
 
-            beadMeshes.forEach((mesh) => {
-                mesh.material.color.set(originalBeadColor);
-            });
-        }
-        else if (beadMeshes.includes(clickedMesh)) {
-            beadMeshes.forEach((mesh) => {
-                if (mesh === clickedMesh) {
-                    mesh.material.color.set('#00ffff');
-                }
-                else {
-                    mesh.material.color.set('#0400ff');
-                }
-            });
+    //         beadMeshes.forEach((mesh) => {
+    //             mesh.material.color.set(originalBeadColor);
+    //         });
+    //     }
+    //     else if (beadMeshes.includes(clickedMesh)) {
+    //         beadMeshes.forEach((mesh) => {
+    //             if (mesh === clickedMesh) {
+    //                 mesh.material.color.set('#00ffff');
+    //             }
+    //             else {
+    //                 mesh.material.color.set('#0400ff');
+    //             }
+    //         });
 
-            frameMeshes.forEach((mesh) => {
-                mesh.material.color.set(originalFrameColor);
-            });
-        }
+    //         frameMeshes.forEach((mesh) => {
+    //             mesh.material.color.set(originalFrameColor);
+    //         });
+    //     }
+    // }
+    // else {
+    //     frameMeshes.forEach((mesh) => {
+    //         mesh.material.color.set(originalFrameColor);
+    //     });
+    //     beadMeshes.forEach((mesh) => {
+    //         mesh.material.color.set(originalBeadColor);
+    //     });
+
+    if (intersects.length === 0) {
+        resetColors();
+        return;
     }
-    else {
-        frameMeshes.forEach((mesh) => {
+
+    const clickedMesh = intersects[0].object;
+    const CYAN = 0x00ffff;
+
+    const isAlreadySelected = clickedMesh.material.color.getHex() === CYAN;
+
+    if (isAlreadySelected) {
+        resetColors();
+        return;
+    }
+
+    if (frameMeshes.includes(clickedMesh)) {
+        frameMeshes.forEach(mesh => {
+            mesh.material.color.set(mesh === clickedMesh ? CYAN : '#0400ff');
+        });
+        beadMeshes.forEach(mesh => {
+            mesh.material.color.set(originalBeadColor);
+        })
+    } else if (beadMeshes.includes(clickedMesh)) {
+        beadMeshes.forEach(mesh => {
+            mesh.material.color.set(mesh === clickedMesh ? CYAN : '#0400ff');
+        });
+        frameMeshes.forEach(mesh => {
             mesh.material.color.set(originalFrameColor);
         });
-        beadMeshes.forEach((mesh) => {
-            mesh.material.color.set(originalBeadColor);
-        });
     }
-
 });
+
+function resetColors() {
+    frameMeshes.forEach(mesh => {
+        mesh.material.color.set(originalFrameColor);
+    });
+
+    beadMeshes.forEach(mesh => {
+        mesh.material.color.set(originalBeadColor);
+    });
+}
 //#endregion
 
 window.addEventListener('resize', () => {
