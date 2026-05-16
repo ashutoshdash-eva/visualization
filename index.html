@@ -3,16 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualization</title>
+    <title>Fenestration Configurator - EvA</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
-        body{
+        body {
             margin: 0;
-            padding: 0;
             overflow: hidden;
+            background-color: #f3f4f6; /* Light background */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #333333;
+        }
+
+        /* Light Theme Glassmorphism */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+        }
+
+        .glass-panel-scrollable {
+            max-height: 95vh;
+            overflow-y: auto;
+        }
+        
+        .glass-panel-scrollable::-webkit-scrollbar {
+            width: 6px;
+        }
+        .glass-panel-scrollable::-webkit-scrollbar-thumb {
+            background: rgba(0, 191, 166, 0.4);
+            border-radius: 10px;
+        }
+
+        .avatar-gradient {
+            background: linear-gradient(135deg, #6C5CE7, #00BFA6);
+        }
+
+        /* Redesigned Inputs for Light Theme */
+        .neon-input {
+            width: 120px !important;
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            border: 1px solid rgba(0, 0, 0, 0.1) !important;
+            color: #008775 !important; /* Darker teal for readability */
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            font-size: 13px;
+        }
+
+        select.neon-input option {
+            background-color: #ffffff;
+            color: #333333;
+        }
+
+        .neon-input:focus {
+            border-color: #00BFA6 !important;
+            background-color: #ffffff !important;
+            box-shadow: 0 0 0 3px rgba(0, 191, 166, 0.2) !important;
+            outline: none;
+        }
+
+        .btn-gradient {
+            background: linear-gradient(135deg, #00BFA6, #6C5CE7);
+            border: none;
+            color: white;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 191, 166, 0.3);
+            color: white;
+        }
+
+        .form-label {
+            color: #555555; /* Darker label for white background */
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 0;
+            flex: 1;
+        }
+
+        .section-divider {
+            height: 1px;
+            background: rgba(0, 0, 0, 0.08); /* Darker divider line */
+            margin: 15px 0;
+        }
+
+        .section-title {
+            color: #888888;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
     </style>
 </head>
+
 <body>
+
+    <!-- User Profile Widget -->
+    <div class="position-fixed top-0 start-0 m-3 p-2 rounded-4 d-flex align-items-center gap-3 glass-panel" style="z-index: 1000; min-width: 250px;">
+        <div class="rounded-circle overflow-hidden d-flex justify-content-center align-items-center flex-shrink-0 avatar-gradient" style="width: 55px; height: 55px;">
+            <img src="./Image/IMG_20260222_005742.png" alt="Ashutosh Dash" class="w-100 h-100 object-fit-cover" onerror="this.style.display='none'">
+        </div>
+        <div class="d-flex flex-column pe-3">
+            <span class="fw-bold text-dark" style="font-size: 15px;">Ashutosh Dash</span>
+            <span class="text-muted" style="font-size: 12px;">Configurator Developer</span>
+        </div>
+    </div>
+
+    <!-- Control Panel -->
+    <div class="position-fixed top-0 end-0 m-3 p-4 rounded-4 glass-panel glass-panel-scrollable" style="width: 340px; z-index: 1000">
+        <h6 class="text-center mb-4 fw-bold" style="color: #00BFA6; letter-spacing: 1px;">DESIGN CONTROLS</h6>
+        
+        <div class="d-flex flex-column gap-2">
+            
+            <div class="section-title mb-1 mt-2">FRAME DIMENSIONS</div>
+            <div class="d-flex justify-content-between align-items-center">
+                <label class="form-label" for="frame-width">Width</label>
+                <input type="number" id="frame-width" class="form-control neon-input text-center shadow-none px-2" value="500">
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <label class="form-label" for="frame-height">Height</label>
+                <input type="number" id="frame-height" class="form-control neon-input text-center shadow-none px-2" value="500">
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div class="section-title mb-1">HANDLE METRICS</div>
+            <div class="d-flex justify-content-between align-items-center">
+                <label class="form-label" for="handle-width">Width</label>
+                <input type="number" id="handle-width" class="form-control neon-input text-center shadow-none px-2" value="40">
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <label class="form-label" for="handle-height">Height</label>
+                <input type="number" id="handle-height" class="form-control neon-input text-center shadow-none px-2" value="150">
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <label class="form-label" for="backset-depth">Backset Depth</label>
+                <input type="number" id="backset-depth" class="form-control neon-input text-center shadow-none px-2" value="10">
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <label class="form-label" for="handle-depth">Handle Depth</label>
+                <input type="number" id="handle-depth" class="form-control neon-input text-center shadow-none px-2" value="10">
+            </div>
+            <div class="d-flex justify-content-between align-items-start mt-1">
+                <div class="d-flex flex-column flex-grow-1">
+                    <label class="form-label mt-1" for="handle-ghh">GHH (Pos)</label>
+                </div>
+                <input type="number" id="handle-ghh" class="form-control neon-input text-center shadow-none px-2" value="250">
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div class="section-title mb-1">CONFIGURATION</div>
+            <div class="d-flex justify-content-between align-items-center">
+                <label class="form-label" for="handle-side">Mount Side</label>
+                <select id="handle-side" class="form-select neon-input shadow-none px-2 py-1">
+                    <option value="right">Right</option>
+                    <option value="left">Left</option>
+                </select>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-1">
+                <label class="form-label" for="handle-orientation">Orientation</label>
+                <select id="handle-orientation" class="form-select neon-input shadow-none px-2 py-1">
+                    <option value="left">Left Handle</option>
+                    <option value="right">Right Handle</option>
+                </select>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center mt-1">
+                <label class="form-label" for="material-style">Material</label>
+                <select id="material-style" class="form-select neon-input shadow-none px-2 py-1">
+                    <option value="realistic">Realistic</option>
+                    <option value="wireframe">Wireframe</option>
+                    <option value="flat">Flat</option>
+                </select>
+            </div>
+
+            <!-- Changed from Camera View to Handle Side per request -->
+            <div class="d-flex justify-content-between align-items-center mt-1">
+                <label class="form-label" for="handle-placement">Handle Side</label>
+                <select id="handle-placement" class="form-select neon-input shadow-none px-2 py-1">
+                    <option value="inside">Inside</option>
+                    <option value="outside">Outside</option>
+                    <option value="both">Both Sides</option>
+                </select>
+            </div>
+
+            <button id="update-btn" class="btn btn-gradient mt-4 py-2 rounded-3">
+                UPDATE DESIGN
+            </button>
+        </div>
+    </div>
+
     <script type="module" src="./src/main.js"></script>
+    
 </body>
 </html>
