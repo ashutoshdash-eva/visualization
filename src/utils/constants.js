@@ -21,6 +21,7 @@ export const COLORS = {
 export const origin= new THREE.Vector2(500,350);
 export const ox = origin.x;
 export const oy = origin.y;
+export const backPlateDepth = 10;
 export const handleDepth = 10;
 export const handleWidth = 40;
 export const handleHeight = 150;

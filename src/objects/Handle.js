@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { scene } from '../scene/setupScene';
-import { origin, ox, oy, handleDepth, handleWidth, handleHeight, w, h } from '../utils/constants';
+import { origin, ox, oy, backPlateDepth, handleDepth, handleWidth, handleHeight, w, h } from '../utils/constants';
 
 export function buildHandle() {
     function createBackplate() {
@@ -16,16 +16,16 @@ export function buildHandle() {
         shape.lineTo(ox, oy - 4 * h);
 
         const geometry = new THREE.ExtrudeGeometry(shape, {
-            depth: handleDepth,
+            depth: backPlateDepth,
             // bevelThickness:0.4
             bevelEnabled: false,
-            curveSegments:100
+            curveSegments: 100
             // bevelSegments:10
         });
         const material = new THREE.MeshPhysicalMaterial({
-            color:'#ffffff',
-            metalness:0.6,
-            roughness:0.0
+            color: '#ffffff',
+            metalness: 0.6,
+            roughness: 0.0
         });
         const backPlate = new THREE.Mesh(geometry, material);
         scene.add(backPlate);
@@ -43,7 +43,7 @@ export function buildHandle() {
 
 
         const geometry = new THREE.ExtrudeGeometry([shapeTop, shapeBottom], {
-            depth: handleDepth + 0.4
+            depth: backPlateDepth + 0.4
         })
         const material = new THREE.MeshBasicMaterial({ color: '#868686' })
         const screw = new THREE.Mesh(geometry, material);
@@ -54,23 +54,23 @@ export function buildHandle() {
     function createHandle() {
 
         const r = Math.min(2 * w, 2 * h);
-        const sphere = new THREE.Mesh(new THREE.SphereGeometry(r / 1.3, 320, 160, 0, Math.PI), new THREE.MeshPhysicalMaterial({
-            color:'#ffffff',
-            metalness:0.6,
-            roughness:0.0
-    }));
-        sphere.position.set(ox, oy, handleDepth / 3);
+        const sphere = new THREE.Mesh(new THREE.SphereGeometry(r / 1.7, 320, 160, 0, Math.PI), new THREE.MeshPhysicalMaterial({
+            color: '#ffffff',
+            metalness: 0.6,
+            roughness: 0.0
+        }));
+        sphere.position.set(ox, oy-h/3, handleDepth);
 
         const shape = new THREE.Shape();
         shape.moveTo(ox, oy);
-        shape.absarc(ox, oy, r, Math.PI/4, 3 * Math.PI / 3.5, false);
+        shape.absarc(ox, oy, r, Math.PI / 4, 3 * Math.PI / 3.5, false);
         // shape.quadraticCurveTo(ox-3.5*r,oy,ox,oy-r);
-        shape.bezierCurveTo(ox - 4 * r, oy, ox, oy - r, ox, oy - 4 * h);
+        shape.bezierCurveTo(ox - 4 * r, oy-h, ox, oy - r, ox, oy - 3 * h);
         // shape.quadraticCurveTo(0,-r,0,0);
         // shape.bezierCurveTo(ox,oy-15*r,ox+r,oy-15*r,ox+r,oy);
 
-        shape.lineTo(ox + 2 * w, oy - 4 * h); //end
-        shape.bezierCurveTo(ox+2*w,oy-2.7*h,ox+3*w,oy,ox+r*Math.cos(Math.PI/4),oy+r*Math.sin(Math.PI/4));
+        shape.lineTo(ox + 2 * w, oy - 3 * h); //end
+        shape.bezierCurveTo(ox + 2 * w, oy - 2 * h, ox + 3 * w, oy, ox + r * Math.cos(Math.PI / 4), oy + r * Math.sin(Math.PI / 4));
         // shape.lineTo(ox,oy-15*h);
         // shape.absarc(ox+w,oy-15*h,w,Math.PI,0,false);
 
@@ -83,12 +83,12 @@ export function buildHandle() {
             curveSegments: 100
         });
         const material = new THREE.MeshPhysicalMaterial({
-            color:'#546c83',
-            metalness:0.6,
-            roughness:0.0
+            color: '#546c83',
+            metalness: 0.6,
+            roughness: 0.0
         });
         const handle = new THREE.Mesh(geometry, material);
-        handle.position.z += handleDepth;
+        handle.position.z += backPlateDepth;
         scene.add(handle);
         handle.add(sphere);
 
@@ -102,10 +102,10 @@ export function buildHandle() {
         // const path = new THREE.CatmullRomCurve3(points);
 
         const path = new THREE.CubicBezierCurve3(
-            new THREE.Vector3(ox + 2 * w, oy - 4 * h, 0),
-            new THREE.Vector3(ox + 2 * w, oy - 5 * h, 0),
-            new THREE.Vector3(ox + 2 * w, oy - 6 * h, 2*handleDepth),
-            new THREE.Vector3(ox + 2 * w, oy - 8 * h, 2*handleDepth)
+            new THREE.Vector3(ox + 2 * w, oy - 3 * h, 0),
+            new THREE.Vector3(ox + 2 * w, oy - 3.8 * h, 0),
+            new THREE.Vector3(ox + 2 * w, oy - 4.2 * h, 2 * handleDepth),
+            new THREE.Vector3(ox + 2 * w, oy - 7 * h, 2 * handleDepth)
         );
 
         const shape2 = new THREE.Shape();
@@ -120,19 +120,19 @@ export function buildHandle() {
             extrudePath: path
         });
         const handleMat = new THREE.MeshPhysicalMaterial({
-            color:'#546c83',
-            metalness:0.6,
-            roughness:0.0
+            color: '#546c83',
+            metalness: 0.6,
+            roughness: 0.0
         });
         const handleMesh = new THREE.Mesh(handleGeo, handleMat);
         handleMesh.position.z += handleDepth;
         handle.add(handleMesh);
 
         const shape3 = new THREE.Shape();
-        shape3.moveTo(ox, oy - 9 * h);
+        shape3.moveTo(ox, oy - 8 * h);
         shape3.lineTo(ox, oy - 16 * h);
         shape3.absarc(ox + w, oy - 16 * h, w, Math.PI, 0, false);
-        shape3.lineTo(ox + 2 * w, oy - 9 * h);
+        shape3.lineTo(ox + 2 * w, oy - 8 * h);
 
         const arcGeo = new THREE.ExtrudeGeometry(shape3, {
             bevelEnabled: false,
@@ -140,12 +140,12 @@ export function buildHandle() {
             depth: handleDepth
         })
         const arcMat = new THREE.MeshPhysicalMaterial({
-            color:'#546c83',
-            metalness:0.6,
-            roughness:0.0
+            color: '#546c83',
+            metalness: 0.6,
+            roughness: 0.0
         });
         const arcMesh = new THREE.Mesh(arcGeo, arcMat);
-        arcMesh.position.z += handleDepth * 3;
+        arcMesh.position.z += backPlateDepth+(handleDepth*2);
         arcMesh.position.y += handleDepth
         scene.add(arcMesh);
     }
