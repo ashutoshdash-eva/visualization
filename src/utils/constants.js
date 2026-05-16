@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 export const frameW = 50;
 export const beadW = 25;
 
@@ -16,3 +17,12 @@ export const COLORS = {
     glass: '#d6e9f0',
     plus: '#000000'
 };
+
+export const origin= new THREE.Vector2(500,350);
+export const ox = origin.x;
+export const oy = origin.y;
+export const handleDepth = 10;
+export const handleWidth = 60;
+export const handleHeight = 160;
+export const w = handleWidth/6;
+export const h = handleHeight/16;
