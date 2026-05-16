@@ -63,13 +63,14 @@ export function buildHandle() {
 
         const shape = new THREE.Shape();
         shape.moveTo(ox, oy);
-        shape.absarc(ox, oy, r, 0, 3 * Math.PI / 3.5, false);
+        shape.absarc(ox, oy, r, Math.PI/4, 3 * Math.PI / 3.5, false);
         // shape.quadraticCurveTo(ox-3.5*r,oy,ox,oy-r);
         shape.bezierCurveTo(ox - 4 * r, oy, ox, oy - r, ox, oy - 4 * h);
         // shape.quadraticCurveTo(0,-r,0,0);
         // shape.bezierCurveTo(ox,oy-15*r,ox+r,oy-15*r,ox+r,oy);
 
-        shape.lineTo(ox + 2 * w, oy - 4 * h);
+        shape.lineTo(ox + 2 * w, oy - 4 * h); //end
+        shape.bezierCurveTo(ox+2*w,oy-2.7*h,ox+3*w,oy,ox+r*Math.cos(Math.PI/4),oy+r*Math.sin(Math.PI/4));
         // shape.lineTo(ox,oy-15*h);
         // shape.absarc(ox+w,oy-15*h,w,Math.PI,0,false);
 
