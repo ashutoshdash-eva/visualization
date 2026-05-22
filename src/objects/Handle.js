@@ -146,7 +146,7 @@ export function buildHandle() {
         });
         const arcMesh = new THREE.Mesh(arcGeo, arcMat);
         arcMesh.position.z += backPlateDepth+(handleDepth*2);
-        arcMesh.position.y += handleDepth
+        arcMesh.position.y += handleDepth;
         scene.add(arcMesh);
     }
     createHandle();

@@ -18,7 +18,8 @@ export const COLORS = {
     plus: '#000000'
 };
 
-export const origin= new THREE.Vector2(500,350);
+export const ghh = 350;
+export const origin= new THREE.Vector2(width,ghh);
 export const ox = origin.x;
 export const oy = origin.y;
 export const backPlateDepth = 10;

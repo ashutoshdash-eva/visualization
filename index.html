@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fenestration Configurator - EvA</title>
+    <title>Visualization</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -12,7 +13,8 @@
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #f3f4f6; /* Light background */
+            background-color: #f3f4f6;
+            /* Light background */
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: #333333;
         }
@@ -30,10 +32,11 @@
             max-height: 95vh;
             overflow-y: auto;
         }
-        
+
         .glass-panel-scrollable::-webkit-scrollbar {
             width: 6px;
         }
+
         .glass-panel-scrollable::-webkit-scrollbar-thumb {
             background: rgba(0, 191, 166, 0.4);
             border-radius: 10px;
@@ -48,7 +51,8 @@
             width: 120px !important;
             background-color: rgba(255, 255, 255, 0.9) !important;
             border: 1px solid rgba(0, 0, 0, 0.1) !important;
-            color: #008775 !important; /* Darker teal for readability */
+            color: #008775 !important;
+            /* Darker teal for readability */
             font-family: 'JetBrains Mono', monospace;
             font-weight: 700;
             transition: all 0.2s ease;
@@ -83,7 +87,8 @@
         }
 
         .form-label {
-            color: #555555; /* Darker label for white background */
+            color: #555555;
+            /* Darker label for white background */
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -94,7 +99,8 @@
 
         .section-divider {
             height: 1px;
-            background: rgba(0, 0, 0, 0.08); /* Darker divider line */
+            background: rgba(0, 0, 0, 0.08);
+            /* Darker divider line */
             margin: 15px 0;
         }
 
@@ -110,9 +116,12 @@
 <body>
 
     <!-- User Profile Widget -->
-    <div class="position-fixed top-0 start-0 m-3 p-2 rounded-4 d-flex align-items-center gap-3 glass-panel" style="z-index: 1000; min-width: 250px;">
-        <div class="rounded-circle overflow-hidden d-flex justify-content-center align-items-center flex-shrink-0 avatar-gradient" style="width: 55px; height: 55px;">
-            <img src="./Image/IMG_20260222_005742.png" alt="Ashutosh Dash" class="w-100 h-100 object-fit-cover" onerror="this.style.display='none'">
+    <div class="position-fixed top-0 start-0 m-3 p-2 rounded-4 d-flex align-items-center gap-3 glass-panel"
+        style="z-index: 1000; min-width: 250px;">
+        <div class="rounded-circle overflow-hidden d-flex justify-content-center align-items-center flex-shrink-0 avatar-gradient"
+            style="width: 55px; height: 55px;">
+            <img src="./Image/IMG_20260222_005742.png" alt="Ashutosh Dash" class="w-100 h-100 object-fit-cover"
+                onerror="this.style.display='none'">
         </div>
         <div class="d-flex flex-column pe-3">
             <span class="fw-bold text-dark" style="font-size: 15px;">Ashutosh Dash</span>
@@ -121,19 +130,22 @@
     </div>
 
     <!-- Control Panel -->
-    <div class="position-fixed top-0 end-0 m-3 p-4 rounded-4 glass-panel glass-panel-scrollable" style="width: 340px; z-index: 1000">
+    <div class="position-fixed top-0 end-0 m-3 p-4 rounded-4 glass-panel glass-panel-scrollable"
+        style="width: 340px; z-index: 1000">
         <h6 class="text-center mb-4 fw-bold" style="color: #00BFA6; letter-spacing: 1px;">DESIGN CONTROLS</h6>
-        
+
         <div class="d-flex flex-column gap-2">
-            
+
             <div class="section-title mb-1 mt-2">FRAME DIMENSIONS</div>
             <div class="d-flex justify-content-between align-items-center">
                 <label class="form-label" for="frame-width">Width</label>
-                <input type="number" id="frame-width" class="form-control neon-input text-center shadow-none px-2" value="500">
+                <input type="number" id="frame-width" class="form-control neon-input text-center shadow-none px-2"
+                    value="500">
             </div>
             <div class="d-flex justify-content-between align-items-center">
                 <label class="form-label" for="frame-height">Height</label>
-                <input type="number" id="frame-height" class="form-control neon-input text-center shadow-none px-2" value="500">
+                <input type="number" id="frame-height" class="form-control neon-input text-center shadow-none px-2"
+                    value="700">
             </div>
 
             <div class="section-divider"></div>
@@ -141,55 +153,66 @@
             <div class="section-title mb-1">HANDLE METRICS</div>
             <div class="d-flex justify-content-between align-items-center">
                 <label class="form-label" for="handle-width">Width</label>
-                <input type="number" id="handle-width" class="form-control neon-input text-center shadow-none px-2" value="40">
+                <input type="number" id="handle-width" class="form-control neon-input text-center shadow-none px-2"
+                    value="40">
             </div>
             <div class="d-flex justify-content-between align-items-center">
                 <label class="form-label" for="handle-height">Height</label>
-                <input type="number" id="handle-height" class="form-control neon-input text-center shadow-none px-2" value="150">
+                <input type="number" id="handle-height" class="form-control neon-input text-center shadow-none px-2"
+                    value="150">
             </div>
             <div class="d-flex justify-content-between align-items-center">
                 <label class="form-label" for="backset-depth">Backset Depth</label>
-                <input type="number" id="backset-depth" class="form-control neon-input text-center shadow-none px-2" value="10">
+                <input type="number" id="backset-depth" class="form-control neon-input text-center shadow-none px-2"
+                    value="10">
             </div>
             <div class="d-flex justify-content-between align-items-center">
                 <label class="form-label" for="handle-depth">Handle Depth</label>
-                <input type="number" id="handle-depth" class="form-control neon-input text-center shadow-none px-2" value="10">
+                <input type="number" id="handle-depth" class="form-control neon-input text-center shadow-none px-2"
+                    value="10">
             </div>
             <div class="d-flex justify-content-between align-items-start mt-1">
                 <div class="d-flex flex-column flex-grow-1">
                     <label class="form-label mt-1" for="handle-ghh">GHH (Pos)</label>
                 </div>
-                <input type="number" id="handle-ghh" class="form-control neon-input text-center shadow-none px-2" value="250">
+                <input type="number" id="handle-ghh" class="form-control neon-input text-center shadow-none px-2"
+                    value="350">
             </div>
 
             <div class="section-divider"></div>
 
             <div class="section-title mb-1">CONFIGURATION</div>
+
+            <!-- Case 2: Side Type -->
             <div class="d-flex justify-content-between align-items-center">
                 <label class="form-label" for="handle-side">Mount Side</label>
                 <select id="handle-side" class="form-select neon-input shadow-none px-2 py-1">
                     <option value="right">Right</option>
                     <option value="left">Left</option>
-                </select>
-            </div>
-            <div class="d-flex justify-content-between align-items-center mt-1">
-                <label class="form-label" for="handle-orientation">Orientation</label>
-                <select id="handle-orientation" class="form-select neon-input shadow-none px-2 py-1">
-                    <option value="left">Left Handle</option>
-                    <option value="right">Right Handle</option>
-                </select>
-            </div>
-            
-            <div class="d-flex justify-content-between align-items-center mt-1">
-                <label class="form-label" for="material-style">Material</label>
-                <select id="material-style" class="form-select neon-input shadow-none px-2 py-1">
-                    <option value="realistic">Realistic</option>
-                    <option value="wireframe">Wireframe</option>
-                    <option value="flat">Flat</option>
+                    <option value="top">Top</option>
+                    <option value="bottom">Bottom</option>
                 </select>
             </div>
 
-            <!-- Changed from Camera View to Handle Side per request -->
+            <!-- Handle Type -->
+            <div class="d-flex justify-content-between align-items-center mt-1">
+                <label class="form-label" for="handle-orientation">Orientation</label>
+                <select id="handle-orientation" class="form-select neon-input shadow-none px-2 py-1">
+                    <option value="left">Left Cockspur</option>
+                    <option value="right">Right Cockspur</option>
+                </select>
+            </div>
+
+            <!-- Case 4: View Type -->
+            <div class="d-flex justify-content-between align-items-center mt-1">
+                <label class="form-label" for="material-style">View Type</label>
+                <select id="material-style" class="form-select neon-input shadow-none px-2 py-1">
+                    <option value="normal">Normal</option>
+                    <option value="realistic">Realistic</option>
+                </select>
+            </div>
+
+            <!-- Case 1: Handle Side -->
             <div class="d-flex justify-content-between align-items-center mt-1">
                 <label class="form-label" for="handle-placement">Handle Side</label>
                 <select id="handle-placement" class="form-select neon-input shadow-none px-2 py-1">
@@ -206,6 +229,7 @@
     </div>
 
     <script type="module" src="./src/main.js"></script>
-    
+
 </body>
+
 </html>
