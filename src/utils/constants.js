@@ -1,11 +1,8 @@
 import * as THREE from 'three';
+
 export const frameW = 50;
 export const beadW = 25;
-
-export const width = 500;
-export const height = 700;
 export const offset = 15;
-
 export const beadOffset = 35;
 
 export const COLORS = {
@@ -18,13 +15,29 @@ export const COLORS = {
     plus: '#000000'
 };
 
-export const ghh = 350;
-export const origin= new THREE.Vector2(width,ghh);
+export const state = {
+    width: 500,
+    height: 700,
+    handleWidth: 40,
+    handleHeight: 150,
+    backPlateDepth: 10,
+    handleDepth: 10,
+    ghh: 350,
+    side: 'right',
+    orientation: 'left',
+    placement: 'inside',
+    viewType: 'normal',
+};
+
+export const width = state.width;
+export const height = state.height;
+export const ghh = state.ghh;
+export const origin = new THREE.Vector2(state.width, state.ghh);
 export const ox = origin.x;
 export const oy = origin.y;
-export const backPlateDepth = 10;
-export const handleDepth = 10;
-export const handleWidth = 40;
-export const handleHeight = 150;
-export const w = handleWidth/6;
-export const h = handleHeight/16;
+export const backPlateDepth = state.backPlateDepth;
+export const handleDepth = state.handleDepth;
+export const handleWidth = state.handleWidth;
+export const handleHeight = state.handleHeight;
+export const w = state.handleWidth / 6;
+export const h = state.handleHeight / 16;

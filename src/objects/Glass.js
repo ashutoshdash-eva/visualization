@@ -1,8 +1,25 @@
 import * as THREE from 'three';
 import { scene } from '../scene/setupScene';
-import { width, height, offset, frameW, beadW, COLORS } from '../utils/constants';
+import { state, offset, frameW, beadW, COLORS } from '../utils/constants';
+
+let glassMesh;
+
+function disposeGlass() {
+    if (!glassMesh) return;
+    scene.remove(glassMesh);
+    glassMesh.geometry?.dispose();
+    glassMesh.material?.dispose();
+    glassMesh.children.forEach(child => {
+        child.geometry?.dispose();
+        child.material?.dispose();
+    });
+    glassMesh = null;
+}
 
 export function buildGlass() {
+    disposeGlass();
+    const { width, height } = state;
+
     const glassWidth = width - 2 * offset - 0.2;
     const glassHeight = height - 2 * offset - 0.2;
     const glassThickness = frameW - beadW - offset - 1;
@@ -20,7 +37,7 @@ export function buildGlass() {
         side: THREE.DoubleSide
     });
 
-    const glassMesh = new THREE.Mesh(glassGeometry, glassMaterial);
+    glassMesh = new THREE.Mesh(glassGeometry, glassMaterial);
     glassMesh.position.set(
         width / 2,
         height / 2,

@@ -1,21 +1,9 @@
 import * as THREE from 'three';
 import { scene } from '../scene/setupScene';
-import { width, height } from '../utils/constants';
-import { COLORS } from '../utils/constants';
-
-export const p1 = new THREE.Vector3(0, 0, 0);
-export const p2 = new THREE.Vector3(width, 0, 0);
-export const p3 = new THREE.Vector3(width, height, 0);
-export const p4 = new THREE.Vector3(0, height, 0);
-
-export const pathArray = [
-    new THREE.LineCurve3(p1, p2),
-    new THREE.LineCurve3(p2, p3),
-    new THREE.LineCurve3(p3, p4),
-    new THREE.LineCurve3(p4, p1)
-];
+import { state, COLORS } from '../utils/constants';
 
 export const frameMeshes = [];
+export let pathArray = [];
 
 function createFrameShape(w = 50, h = 50, h1 = 15) {
     const shape = new THREE.Shape();
@@ -29,7 +17,39 @@ function createFrameShape(w = 50, h = 50, h1 = 15) {
     return shape;
 }
 
+function disposeFrameMeshes() {
+    frameMeshes.forEach(mesh => {
+        scene.remove(mesh);
+        mesh.geometry?.dispose();
+        mesh.material?.dispose();
+        // Dispose only the edge LineSegments we attached here.
+        // Beads parented under frameMeshes are owned by Bead.js and disposed there.
+        mesh.children.forEach(child => {
+            if (child.isLineSegments) {
+                child.geometry?.dispose();
+                child.material?.dispose();
+            }
+        });
+    });
+    frameMeshes.length = 0;
+}
+
 export function buildFrame() {
+    disposeFrameMeshes();
+
+    const { width, height } = state;
+    const p1 = new THREE.Vector3(0, 0, 0);
+    const p2 = new THREE.Vector3(width, 0, 0);
+    const p3 = new THREE.Vector3(width, height, 0);
+    const p4 = new THREE.Vector3(0, height, 0);
+
+    pathArray = [
+        new THREE.LineCurve3(p1, p2),
+        new THREE.LineCurve3(p2, p3),
+        new THREE.LineCurve3(p3, p4),
+        new THREE.LineCurve3(p4, p1)
+    ];
+
     pathArray.forEach((edge, index) => {
 
         const geometry = new THREE.ExtrudeGeometry(createFrameShape(), {

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { scene } from '../scene/setupScene';
 import { frameMeshes, pathArray } from './Frame';
-import { width, height, beadW, offset, beadOffset, COLORS } from '../utils/constants';
+import { state, beadW, offset, beadOffset, COLORS } from '../utils/constants';
 
 export const beadMeshes = [];
 
@@ -19,7 +19,25 @@ function createBeadShape(w = beadW, h = 35, t = 5, r = 12) {
     return shape;
 }
 
+function disposeBeadMeshes() {
+    beadMeshes.forEach(mesh => {
+        if (mesh.parent) mesh.parent.remove(mesh);
+        mesh.geometry?.dispose();
+        mesh.material?.dispose();
+        mesh.children.forEach(child => {
+            if (child.isLineSegments) {
+                child.geometry?.dispose();
+                child.material?.dispose();
+            }
+        });
+    });
+    beadMeshes.length = 0;
+}
+
 export function buildBeads() {
+    disposeBeadMeshes();
+    const { width, height } = state;
+
     pathArray.forEach((edge, index) => {
 
         const geometry = new THREE.ExtrudeGeometry(createBeadShape(), {
@@ -62,7 +80,6 @@ export function buildBeads() {
         );
         mesh.add(line);
 
-        scene.add(mesh);
         frameMeshes[index].add(mesh);
         beadMeshes.push(mesh);
     });
