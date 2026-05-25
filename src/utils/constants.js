@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 
 export const frameW = 50;
-export const beadW = 25;
-export const offset = 15;
-export const beadOffset = 35;
+export const beadW = 15;
+export const offset = 30;
+export const beadOffset = 20;
 
 export const COLORS = {
     frame: '#5a3e2b',

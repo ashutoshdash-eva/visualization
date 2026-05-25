@@ -5,7 +5,7 @@ import { state, COLORS } from '../utils/constants';
 export const frameMeshes = [];
 export let pathArray = [];
 
-function createFrameShape(w = 50, h = 50, h1 = 15) {
+function createFrameShape(w = 50, h = 50, h1 = 30) {
     const shape = new THREE.Shape();
     shape.moveTo(0, 0);
     shape.lineTo(w, 0);

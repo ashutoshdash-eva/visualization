@@ -82,10 +82,10 @@ export function applyHandleTransforms() {
 
     let posX, posY, rotZ;
     switch (side) {
-        case 'right': posX = width; posY = ghh; rotZ = 0; break;
-        case 'left': posX = 0; posY = ghh; rotZ = 0; break;
-        case 'top': posX = width/2; posY = height; rotZ = -Math.PI / 2; break;
-        case 'bottom': posX = width/2; posY = 0; rotZ = Math.PI / 2; break;
+        case 'right': posX = width-15; posY = ghh; rotZ = 0; break;
+        case 'left': posX = 15; posY = ghh; rotZ = 0; break;
+        case 'top': posX = width/2; posY = height-15; rotZ = Math.PI / 2; break;
+        case 'bottom': posX = width/2; posY = 15; rotZ = 3*Math.PI / 2; break;
         default: posX = width; posY = ghh; rotZ = 0;
     }
     handleRoot.position.set(posX, posY, 0);
@@ -105,13 +105,13 @@ export function applyHandleTransforms() {
         handleRoot.scale.set(orientScale, 1, 1);
         handleRoot.position.z = 0;
     } else if (placement === 'outside') {
-        handleRoot.scale.set(orientScale, 1, -1);
+        handleRoot.scale.set(-orientScale, 1, -1);
         handleRoot.position.z = -frameW;
     } else if (placement === 'both') {
         handleRoot.scale.set(orientScale, 1, 1);
         handleRoot.position.z = 0;
         outsideClone = cloneRootForOutside(handleRoot);
-        outsideClone.scale.set(orientScale, 1, -1);
+        outsideClone.scale.set(-orientScale, 1, -1);
         outsideClone.position.set(posX, posY, -frameW);
         outsideClone.rotation.z = rotZ;
         scene.add(outsideClone);

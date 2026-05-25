@@ -5,7 +5,7 @@ import { state, beadW, offset, beadOffset, COLORS } from '../utils/constants';
 
 export const beadMeshes = [];
 
-function createBeadShape(w = beadW, h = 35, t = 5, r = 12) {
+function createBeadShape(w = beadW, h = 20, t = 5, r = 5) {
     const shape = new THREE.Shape();
     shape.moveTo(0, 0);
     shape.lineTo(t, 0);
