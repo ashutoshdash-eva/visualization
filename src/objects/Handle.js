@@ -127,7 +127,7 @@ export function buildHandle() {
             roughness: 0.0
         });
         const arcMesh = new THREE.Mesh(arcGeo, arcMat);
-        arcMesh.position.z += backPlateDepth;
+        arcMesh.position.z += handleDepth;
         arcMesh.position.y += handleDepth;
         handleMesh.add(arcMesh);
         return handle;

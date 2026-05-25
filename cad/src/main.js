@@ -485,9 +485,9 @@ function addWindow(windowWidth = 100, windowHeight = 100) {
     ];
     scene.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(plusPoints), new THREE.LineBasicMaterial({ color: '#000000' })));
 
-    function addhandle(){
+    function addhandle() {
         const handle = new THREE.Shape();
-        handle.moveTo(right,(top-bottom)/2,0);
+        handle.moveTo(right, (top - bottom) / 2, 0);
         handle.lineTo()
     }
 }

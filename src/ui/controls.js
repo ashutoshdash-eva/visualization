@@ -17,7 +17,10 @@ const $ = (id) => document.getElementById(id);
 //     return num;
 // }
 
-function applyFromDom() {
+export const frameWidth = Number($('frame-width').value);
+export const frameHeight = Number($('frame-height').value);
+
+export function applyFromDom() {
     const frameWidth = Number($('frame-width').value);
     const frameHeight = Number($('frame-height').value);
     const handleWidth = Number($('handle-width').value);
