@@ -6,7 +6,6 @@ export function buildHandle() {
     const w = handleWidth / 6;
     const h = handleHeight / 16;
 
-    let backPlate;
     function createBackplate() {
 
         const r = (handleWidth / 6) * 2.2;
@@ -22,14 +21,18 @@ export function buildHandle() {
         const geometry = new THREE.ExtrudeGeometry(shape, {
             depth: backPlateDepth,
             bevelEnabled: false,
-            curveSegments: 100
         });
         const material = new THREE.MeshPhysicalMaterial({
             color: '#ffffff',
             metalness: 0.6,
             roughness: 0.0
         });
-        backPlate = new THREE.Mesh(geometry, material);
+        const backPlate = new THREE.Mesh(geometry, material);
+        const handle = createHandle();
+        const screw = createScrew();
+        backPlate.add(handle);
+        backPlate.add(screw);
+        return backPlate;
     }
     createBackplate();
 
@@ -45,9 +48,9 @@ export function buildHandle() {
         });
         const material = new THREE.MeshBasicMaterial({ color: '#868686' });
         const screw = new THREE.Mesh(geometry, material);
-        backPlate.add(screw);
+        return screw;
     }
-    createScrew();
+
 
     function createHandle() {
 
@@ -78,7 +81,6 @@ export function buildHandle() {
         });
         const handle = new THREE.Mesh(geometry, material);
         handle.position.z += backPlateDepth;
-        backPlate.add(handle);
         handle.add(sphere);
 
         const path = new THREE.CubicBezierCurve3(
@@ -128,8 +130,12 @@ export function buildHandle() {
         arcMesh.position.z += backPlateDepth;
         arcMesh.position.y += handleDepth;
         handleMesh.add(arcMesh);
+        return handle;
+
+
     }
-    createHandle();
+    const backPlate = createBackplate();
+
 
     return backPlate;
 }

@@ -80,12 +80,12 @@ export function applyHandleTransforms() {
     if (!handleRoot) return;
     const { side, orientation, placement, viewType, width, height, ghh } = state;
 
-    let posX, posY, rotZ;
+    let posX=0, posY=0, rotZ=0;
     switch (side) {
         case 'right': posX = width-15; posY = ghh; rotZ = 0; break;
         case 'left': posX = 15; posY = ghh; rotZ = 0; break;
-        case 'top': posX = width/2; posY = height-15; rotZ = Math.PI / 2; break;
-        case 'bottom': posX = width/2; posY = 15; rotZ = 3*Math.PI / 2; break;
+        case 'top': posX = ghh; posY = height-15; rotZ = Math.PI / 2; break;
+        case 'bottom': posX = ghh; posY = 15; rotZ = 3*Math.PI / 2; break;
         default: posX = width; posY = ghh; rotZ = 0;
     }
     handleRoot.position.set(posX, posY, 0);

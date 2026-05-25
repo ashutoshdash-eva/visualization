@@ -4,229 +4,955 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualization</title>
+    <title>Window Configurator</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
     <style>
-        body {
+        :root {
+            --primary: #00BFA6;
+            --primary-light: #00d4b8;
+            --primary-dark: #008775;
+            --secondary: #6C5CE7;
+            --accent: #fd79a8;
+            --bg-main: #eef2f7;
+            --text-primary: #1a1d2e;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.12);
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+
+            /* Dynamic spacing — overridden by JS clamp */
+            --gap: clamp(3px, 0.8vh, 10px);
+            --pad: clamp(8px, 1.2vh, 18px);
+            --row-py: clamp(2px, 0.5vh, 7px);
+            --fs-label: clamp(10px, 1.1vh, 12px);
+            --fs-input: clamp(10px, 1.1vh, 12px);
+            --fs-section: clamp(9px, 1vh, 11px);
+            --input-h: clamp(26px, 3.2vh, 34px);
+            --input-w: clamp(88px, 10vw, 112px);
+            --stat-pad: clamp(4px, 0.7vh, 9px);
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
+            padding: 0;
+        }
+
+        body {
             overflow: hidden;
-            background-color: #f3f4f6;
-            /* Light background */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: #333333;
+            background: var(--bg-main);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+            height: 100vh;
+            width: 100vw;
         }
 
-        /* Light Theme Glassmorphism */
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 1);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 700px 500px at 10% 20%, rgba(0, 191, 166, .06) 0%, transparent 70%),
+                radial-gradient(ellipse 500px 400px at 90% 80%, rgba(108, 92, 231, .06) 0%, transparent 70%);
+            pointer-events: none;
         }
 
-        .glass-panel-scrollable {
-            max-height: 95vh;
-            overflow-y: auto;
+        /* ── Glass ── */
+        .glass {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            box-shadow: var(--shadow-lg);
         }
 
-        .glass-panel-scrollable::-webkit-scrollbar {
-            width: 6px;
+        /* ════════════════════════════
+           PROFILE CARD
+        ════════════════════════════ */
+        .profile-card {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            border-radius: var(--radius-lg);
+            padding: clamp(8px, 1vh, 14px) clamp(10px, 1.2vw, 16px);
+            display: flex;
+            align-items: center;
+            gap: clamp(8px, 1vw, 14px);
+            animation: slideLeft .4s cubic-bezier(.4, 0, .2, 1) both;
         }
 
-        .glass-panel-scrollable::-webkit-scrollbar-thumb {
-            background: rgba(0, 191, 166, 0.4);
-            border-radius: 10px;
+        .avatar-ring {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 2.5px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            position: relative;
         }
 
-        .avatar-gradient {
-            background: linear-gradient(135deg, #6C5CE7, #00BFA6);
+        .avatar-inner {
+            background: #fff;
+            border-radius: 50%;
+            padding: 2px;
+            width: clamp(38px, 4.5vh, 52px);
+            height: clamp(38px, 4.5vh, 52px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
 
-        /* Redesigned Inputs for Light Theme */
-        .neon-input {
-            width: 120px !important;
-            background-color: rgba(255, 255, 255, 0.9) !important;
-            border: 1px solid rgba(0, 0, 0, 0.1) !important;
-            color: #008775 !important;
-            /* Darker teal for readability */
-            font-family: 'JetBrains Mono', monospace;
+        .avatar-inner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .avatar-fallback {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
             font-weight: 700;
-            transition: all 0.2s ease;
-            font-size: 13px;
+            font-size: clamp(13px, 1.6vh, 18px);
         }
 
-        select.neon-input option {
-            background-color: #ffffff;
-            color: #333333;
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            background: #22c55e;
+            border-radius: 50%;
+            border: 2px solid white;
+            position: absolute;
+            bottom: 1px;
+            right: 1px;
+            animation: pulseDot 2s infinite;
+        }
+
+        .profile-name {
+            font-size: clamp(12px, 1.4vh, 15px);
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        .profile-badge {
+            font-size: clamp(9px, 1vh, 11px);
+            font-weight: 600;
+            letter-spacing: .4px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(0, 191, 166, .1), rgba(108, 92, 231, .1));
+            color: var(--primary-dark);
+            border: 1px solid rgba(0, 191, 166, .2);
+            white-space: nowrap;
+        }
+
+        .profile-sep {
+            width: 1px;
+            height: 34px;
+            background: rgba(0, 0, 0, .08);
+        }
+
+        .quick-btn {
+            width: clamp(24px, 2.8vh, 30px);
+            height: clamp(24px, 2.8vh, 30px);
+            border-radius: 7px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(11px, 1.3vh, 14px);
+            transition: var(--transition);
+        }
+
+        .quick-btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+
+        /* ════════════════════════════
+           CONTROL PANEL  — KEY PIECE
+        ════════════════════════════ */
+        .ctrl-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            bottom: 10px;
+            /* stretches to bottom */
+            z-index: 1000;
+            width: clamp(280px, 22vw, 340px);
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            /* children handle their own scroll */
+            animation: slideRight .4s cubic-bezier(.4, 0, .2, 1) both;
+        }
+
+        /* Inner wrapper — fills height, no overflow */
+        .ctrl-inner {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: var(--pad);
+            gap: var(--gap);
+            overflow: hidden;
+            /* NO SCROLL */
+            min-height: 0;
+        }
+
+        /* ── Panel header ── */
+        .panel-header {
+            background: linear-gradient(135deg, rgba(0, 191, 166, .08), rgba(108, 92, 231, .08));
+            border-radius: var(--radius-md);
+            padding: clamp(8px, 1vh, 14px) clamp(10px, 1.2vw, 14px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+            border: 1px solid rgba(0, 191, 166, .1);
+        }
+
+        .panel-icon {
+            width: clamp(26px, 3vh, 34px);
+            height: clamp(26px, 3vh, 34px);
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: clamp(11px, 1.3vh, 15px);
+            flex-shrink: 0;
+        }
+
+        .panel-title {
+            font-size: clamp(9px, 1vh, 11px);
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .panel-sub {
+            font-size: clamp(8px, .9vh, 10px);
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        .live-badge {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: clamp(8px, .9vh, 10px);
+            color: #22c55e;
+            font-weight: 700;
+        }
+
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: pulseDot 2s infinite;
+        }
+
+        /* ── Stats bar ── */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: clamp(4px, .6vh, 8px);
+            flex-shrink: 0;
+        }
+
+        .stat-item {
+            background: rgba(248, 250, 252, .85);
+            border: 1px solid rgba(0, 0, 0, .06);
+            border-radius: 8px;
+            padding: var(--stat-pad) 4px;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .stat-item:hover {
+            background: white;
+            border-color: rgba(0, 191, 166, .25);
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(11px, 1.3vh, 14px);
+            font-weight: 700;
+            color: var(--primary-dark);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: clamp(8px, .85vh, 10px);
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            margin-top: 2px;
+        }
+
+        /* ── Sections container — grows to fill remaining space ── */
+        .sections-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap);
+            min-height: 0;
+        }
+
+        /* ── Each section block ── */
+        .section-block {
+            background: rgba(248, 250, 252, .75);
+            border: 1px solid rgba(0, 191, 166, .08);
+            border-radius: var(--radius-sm);
+            padding: clamp(6px, .9vh, 12px) clamp(8px, 1vw, 12px);
+            flex: 1;
+            /* fills available height equally */
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            transition: var(--transition);
+        }
+
+        .section-block:hover {
+            background: rgba(248, 250, 252, .95);
+            border-color: rgba(0, 191, 166, .18);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: clamp(4px, .6vh, 8px);
+            flex-shrink: 0;
+        }
+
+        .section-icon {
+            width: clamp(18px, 2vh, 24px);
+            height: clamp(18px, 2vh, 24px);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(9px, 1vh, 12px);
+            flex-shrink: 0;
+        }
+
+        .si-teal {
+            background: rgba(0, 191, 166, .12);
+            color: var(--primary);
+        }
+
+        .si-purple {
+            background: rgba(108, 92, 231, .12);
+            color: var(--secondary);
+        }
+
+        .si-pink {
+            background: rgba(253, 121, 168, .12);
+            color: var(--accent);
+        }
+
+        .section-title-text {
+            font-size: var(--fs-section);
+            font-weight: 700;
+            letter-spacing: .8px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        /* ── Form rows ── */
+        .form-rows {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            /* spread rows in available height */
+            flex: 1;
+            min-height: 0;
+        }
+
+        .form-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: var(--row-py) 0;
+            border-top: 1px solid rgba(0, 0, 0, .04);
+        }
+
+        .form-row:first-child {
+            border-top: none;
+        }
+
+        .form-label-custom {
+            font-size: var(--fs-label);
+            font-weight: 500;
+            color: var(--text-secondary);
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+
+        .lbl-icon {
+            font-size: clamp(9px, .95vh, 11px);
+            color: var(--text-muted);
+        }
+
+        /* ── Inputs ── */
+        .input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .neon-input {
+            width: var(--input-w) !important;
+            height: var(--input-h) !important;
+            background: rgba(255, 255, 255, .9) !important;
+            border: 1.5px solid rgba(0, 0, 0, .09) !important;
+            color: var(--primary-dark) !important;
+            font-family: 'JetBrains Mono', monospace !important;
+            font-weight: 600 !important;
+            font-size: var(--fs-input) !important;
+            border-radius: 7px !important;
+            padding: 0 24px 0 8px !important;
+            transition: var(--transition) !important;
+            text-align: center;
+        }
+
+        .neon-input:hover {
+            border-color: rgba(0, 191, 166, .3) !important;
+            background: white !important;
         }
 
         .neon-input:focus {
-            border-color: #00BFA6 !important;
-            background-color: #ffffff !important;
-            box-shadow: 0 0 0 3px rgba(0, 191, 166, 0.2) !important;
-            outline: none;
+            border-color: var(--primary) !important;
+            background: white !important;
+            box-shadow: 0 0 0 3px rgba(0, 191, 166, .15) !important;
+            outline: none !important;
         }
 
-        .btn-gradient {
-            background: linear-gradient(135deg, #00BFA6, #6C5CE7);
+        select.neon-input {
+            cursor: pointer;
+            padding-right: 4px !important;
+            appearance: auto;
+        }
+
+        select.neon-input option {
+            background: white;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .input-unit {
+            position: absolute;
+            right: 7px;
+            font-size: clamp(8px, .85vh, 10px);
+            font-weight: 700;
+            color: var(--text-muted);
+            pointer-events: none;
+            letter-spacing: .3px;
+        }
+
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            opacity: .4;
+        }
+
+        /* ── Action buttons ── */
+        .action-row {
+            display: flex;
+            gap: clamp(6px, .8vh, 10px);
+            flex-shrink: 0;
+        }
+
+        .btn-reset {
+            flex: 0 0 auto;
+            height: var(--input-h);
+            min-height: 30px;
+            padding: 0 clamp(10px, 1.2vw, 16px);
+            background: transparent;
+            border: 1.5px solid rgba(0, 0, 0, .1);
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: clamp(10px, 1.1vh, 12px);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+
+        .btn-reset:hover {
+            background: rgba(239, 68, 68, .06);
+            border-color: rgba(239, 68, 68, .3);
+            color: #ef4444;
+        }
+
+        .btn-update {
+            flex: 1;
+            height: var(--input-h);
+            min-height: 30px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             border: none;
             color: white;
             font-weight: 600;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            width: 100%;
+            font-size: clamp(10px, 1.1vh, 12px);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
 
-        .btn-gradient:hover {
+        .btn-update:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 191, 166, 0.3);
+            box-shadow: 0 8px 22px rgba(0, 191, 166, .35);
             color: white;
         }
 
-        .form-label {
-            color: #555555;
-            /* Darker label for white background */
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-            margin-bottom: 0;
-            flex: 1;
+        .btn-update:active {
+            transform: translateY(0);
         }
 
-        .section-divider {
-            height: 1px;
-            background: rgba(0, 0, 0, 0.08);
-            /* Darker divider line */
-            margin: 15px 0;
+        .btn-shimmer {
+            position: absolute;
+            top: -50%;
+            left: -75%;
+            width: 50%;
+            height: 200%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, .2), transparent);
+            transform: skewX(-20deg);
+            animation: shimmer 3s infinite;
         }
 
-        .section-title {
-            color: #888888;
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
+        /* ── Footer ── */
+        .panel-footer {
+            text-align: center;
+            font-size: clamp(8px, .9vh, 10px);
+            color: var(--text-muted);
+            flex-shrink: 0;
+            padding-top: clamp(2px, .4vh, 5px);
+        }
+
+        /* ════════════════════════════
+           CANVAS INFO BAR
+        ════════════════════════════ */
+        .canvas-info {
+            position: fixed;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            border-radius: 40px;
+            padding: clamp(6px, .8vh, 10px) clamp(14px, 2vw, 24px);
+            display: flex;
+            align-items: center;
+            gap: clamp(10px, 1.5vw, 20px);
+            animation: slideUp .5s .2s cubic-bezier(.4, 0, .2, 1) both;
+        }
+
+        .ci-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: clamp(10px, 1.1vh, 12px);
+            font-weight: 500;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .ci-item i {
+            font-size: clamp(11px, 1.2vh, 13px);
+            color: var(--primary);
+        }
+
+        .ci-sep {
+            width: 1px;
+            height: 14px;
+            background: rgba(0, 0, 0, .1);
+        }
+
+        /* ════════════════════════════
+           ANIMATIONS
+        ════════════════════════════ */
+        @keyframes slideLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-18px);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        @keyframes slideRight {
+            from {
+                opacity: 0;
+                transform: translateX(18px);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        @keyframes pulseDot {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, .4);
+            }
+
+            50% {
+                box-shadow: 0 0 0 4px rgba(34, 197, 94, 0);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                left: -75%;
+            }
+
+            100% {
+                left: 150%;
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <!-- User Profile Widget -->
-    <div class="position-fixed top-0 start-0 m-3 p-2 rounded-4 d-flex align-items-center gap-3 glass-panel"
-        style="z-index: 1000; min-width: 250px;">
-        <div class="rounded-circle overflow-hidden d-flex justify-content-center align-items-center flex-shrink-0 avatar-gradient"
-            style="width: 55px; height: 55px;">
-            <img src="./Image/IMG_20260222_005742.png" alt="Ashutosh Dash" class="w-100 h-100 object-fit-cover"
-                onerror="this.style.display='none'">
+    <!-- ══════════ Profile Card ══════════ -->
+    <div class="glass profile-card">
+        <div class="avatar-ring">
+            <div class="avatar-inner">
+                <img src="./Image/IMG_20260222_005742.png" alt="AD"
+                    onerror="this.parentElement.innerHTML='<div class=\'avatar-fallback\'>AD</div>'">
+            </div>
+            <span class="status-dot"></span>
         </div>
-        <div class="d-flex flex-column pe-3">
-            <span class="fw-bold text-dark" style="font-size: 15px;">Ashutosh Dash</span>
-            <span class="text-muted" style="font-size: 12px;">Configurator Developer</span>
+
+        <div class="d-flex flex-column gap-1">
+            <span class="profile-name">Ashutosh Dash</span>
+            <span class="profile-badge">Configurator Developer</span>
         </div>
+
+        <div class="profile-sep"></div>
+
+        <button class="quick-btn" style="background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;width:auto;padding:0 10px;font-size:clamp(9px,1.1vh,11px);font-weight:700;letter-spacing:.5px;" title="CAD View"
+            onclick="window.location.href='cad/index.html'">
+            Show CAD View
+        </button>
     </div>
 
-    <!-- Control Panel -->
-    <div class="position-fixed top-0 end-0 m-3 p-4 rounded-4 glass-panel glass-panel-scrollable"
-        style="width: 340px; z-index: 1000">
-        <h6 class="text-center mb-4 fw-bold" style="color: #00BFA6; letter-spacing: 1px;">DESIGN CONTROLS</h6>
 
-        <div class="d-flex flex-column gap-2">
+    <!-- ══════════ Control Panel ══════════ -->
+    <div class="glass ctrl-panel">
+        <div class="ctrl-inner">
 
-            <div class="section-title mb-1 mt-2">FRAME DIMENSIONS</div>
-            <div class="d-flex justify-content-between align-items-center">
-                <label class="form-label" for="frame-width">Width</label>
-                <input type="number" id="frame-width" class="form-control neon-input text-center shadow-none px-2"
-                    value="500">
-            </div>
-            <div class="d-flex justify-content-between align-items-center">
-                <label class="form-label" for="frame-height">Height</label>
-                <input type="number" id="frame-height" class="form-control neon-input text-center shadow-none px-2"
-                    value="700">
-            </div>
-
-            <div class="section-divider"></div>
-
-            <div class="section-title mb-1">HANDLE METRICS</div>
-            <div class="d-flex justify-content-between align-items-center">
-                <label class="form-label" for="handle-width">Width</label>
-                <input type="number" id="handle-width" class="form-control neon-input text-center shadow-none px-2"
-                    value="40">
-            </div>
-            <div class="d-flex justify-content-between align-items-center">
-                <label class="form-label" for="handle-height">Height</label>
-                <input type="number" id="handle-height" class="form-control neon-input text-center shadow-none px-2"
-                    value="150">
-            </div>
-            <div class="d-flex justify-content-between align-items-center">
-                <label class="form-label" for="backset-depth">Backset Depth</label>
-                <input type="number" id="backset-depth" class="form-control neon-input text-center shadow-none px-2"
-                    value="10">
-            </div>
-            <div class="d-flex justify-content-between align-items-center">
-                <label class="form-label" for="handle-depth">Handle Depth</label>
-                <input type="number" id="handle-depth" class="form-control neon-input text-center shadow-none px-2"
-                    value="10">
-            </div>
-            <div class="d-flex justify-content-between align-items-start mt-1">
-                <div class="d-flex flex-column flex-grow-1">
-                    <label class="form-label mt-1" for="handle-ghh">GHH (Pos)</label>
+            <!-- Header -->
+            <div class="panel-header">
+                <div class="panel-icon"><i class="bi bi-sliders2"></i></div>
+                <div>
+                    <div class="panel-title">Design Controls</div>
+                    <div class="panel-sub">Window Configurator v2.0</div>
                 </div>
-                <input type="number" id="handle-ghh" class="form-control neon-input text-center shadow-none px-2"
-                    value="350">
+                <div class="live-badge">
+                    <span class="live-dot"></span> LIVE
+                </div>
             </div>
 
-            <div class="section-divider"></div>
-
-            <div class="section-title mb-1">CONFIGURATION</div>
-
-            <!-- Case 2: Side Type -->
-            <div class="d-flex justify-content-between align-items-center">
-                <label class="form-label" for="handle-side">Mount Side</label>
-                <select id="handle-side" class="form-select neon-input shadow-none px-2 py-1">
-                    <option value="right">Right</option>
-                    <option value="left">Left</option>
-                    <option value="top">Top</option>
-                    <option value="bottom">Bottom</option>
-                </select>
+            <!-- Stats -->
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-value" id="stat-width">500</div>
+                    <div class="stat-label">Width</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="stat-height">700</div>
+                    <div class="stat-label">Height</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="stat-ghh">350</div>
+                    <div class="stat-label">GHH</div>
+                </div>
             </div>
 
-            <!-- Handle Type -->
-            <div class="d-flex justify-content-between align-items-center mt-1">
-                <label class="form-label" for="handle-orientation">Orientation</label>
-                <select id="handle-orientation" class="form-select neon-input shadow-none px-2 py-1">
-                    <option value="left">Left Cockspur</option>
-                    <option value="right">Right Cockspur</option>
-                </select>
+            <!-- All sections grow equally to fill remaining space -->
+            <div class="sections-wrap">
+
+                <!-- Frame Dimensions -->
+                <div class="section-block">
+                    <div class="section-header">
+                        <div class="section-icon si-teal"><i class="bi bi-bounding-box"></i></div>
+                        <span class="section-title-text">Frame Dimensions</span>
+                    </div>
+                    <div class="form-rows">
+                        <div class="form-row">
+                            <label class="form-label-custom" for="frame-width">
+                                <i class="bi bi-arrows-expand lbl-icon"
+                                    style="transform:rotate(90deg);display:inline-block;"></i>
+                                Width
+                            </label>
+                            <div class="input-wrap">
+                                <input type="number" id="frame-width" class="neon-input" value="500">
+                                <span class="input-unit">px</span>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <label class="form-label-custom" for="frame-height">
+                                <i class="bi bi-arrows-expand lbl-icon"></i>
+                                Height
+                            </label>
+                            <div class="input-wrap">
+                                <input type="number" id="frame-height" class="neon-input" value="700">
+                                <span class="input-unit">px</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Handle Metrics -->
+                <div class="section-block">
+                    <div class="section-header">
+                        <div class="section-icon si-purple"><i class="bi bi-rulers"></i></div>
+                        <span class="section-title-text">Handle Metrics</span>
+                    </div>
+                    <div class="form-rows">
+                        <div class="form-row">
+                            <label class="form-label-custom" for="handle-width">
+                                <i class="bi bi-distribute-horizontal lbl-icon"></i>Width
+                            </label>
+                            <div class="input-wrap">
+                                <input type="number" id="handle-width" class="neon-input" value="40">
+                                <span class="input-unit">mm</span>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <label class="form-label-custom" for="handle-height">
+                                <i class="bi bi-distribute-vertical lbl-icon"></i>Height
+                            </label>
+                            <div class="input-wrap">
+                                <input type="number" id="handle-height" class="neon-input" value="150">
+                                <span class="input-unit">mm</span>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <label class="form-label-custom" for="backset-depth">
+                                <i class="bi bi-arrow-bar-right lbl-icon"></i>Backset
+                            </label>
+                            <div class="input-wrap">
+                                <input type="number" id="backset-depth" class="neon-input" value="10">
+                                <span class="input-unit">mm</span>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <label class="form-label-custom" for="handle-depth">
+                                <i class="bi bi-layers lbl-icon"></i>Depth
+                            </label>
+                            <div class="input-wrap">
+                                <input type="number" id="handle-depth" class="neon-input" value="10">
+                                <span class="input-unit">mm</span>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <label class="form-label-custom" for="handle-ghh">
+                                <i class="bi bi-crosshair lbl-icon"></i>GHH Pos
+                            </label>
+                            <div class="input-wrap">
+                                <input type="number" id="handle-ghh" class="neon-input" value="350">
+                                <span class="input-unit">mm</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuration -->
+                <div class="section-block">
+                    <div class="section-header">
+                        <div class="section-icon si-pink"><i class="bi bi-toggles"></i></div>
+                        <span class="section-title-text">Configuration</span>
+                    </div>
+                    <div class="form-rows">
+                        <div class="form-row">
+                            <label class="form-label-custom" for="handle-side">
+                                <i class="bi bi-layout-sidebar lbl-icon"></i>Mount Side
+                            </label>
+                            <div class="input-wrap">
+                                <select id="handle-side" class="neon-input">
+                                    <option value="right">Right</option>
+                                    <option value="left">Left</option>
+                                    <option value="top">Top</option>
+                                    <option value="bottom">Bottom</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <label class="form-label-custom" for="handle-orientation">
+                                <i class="bi bi-symmetry-horizontal lbl-icon"></i>Orientation
+                            </label>
+                            <div class="input-wrap">
+                                <select id="handle-orientation" class="neon-input">
+                                    <option value="left">Left Cockspur</option>
+                                    <option value="right">Right Cockspur</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <label class="form-label-custom" for="material-style">
+                                <i class="bi bi-eye lbl-icon"></i>View Type
+                            </label>
+                            <div class="input-wrap">
+                                <select id="material-style" class="neon-input">
+                                    <option value="normal">Normal</option>
+                                    <option value="realistic">Realistic</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <label class="form-label-custom" for="handle-placement">
+                                <i class="bi bi-front lbl-icon"></i>Handle Side
+                            </label>
+                            <div class="input-wrap">
+                                <select id="handle-placement" class="neon-input">
+                                    <option value="inside">Inside</option>
+                                    <option value="outside">Outside</option>
+                                    <option value="both">Both Sides</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /sections-wrap -->
+
+            <!-- Action Buttons -->
+            <div class="action-row">
+                <button class="btn-reset" id="reset-btn">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </button>
+                <button class="btn-update" id="update-btn">
+                    <span class="btn-shimmer"></span>
+                    <i class="bi bi-play-fill"></i> Update
+                </button>
             </div>
 
-            <!-- Case 4: View Type -->
-            <div class="d-flex justify-content-between align-items-center mt-1">
-                <label class="form-label" for="material-style">View Type</label>
-                <select id="material-style" class="form-select neon-input shadow-none px-2 py-1">
-                    <option value="normal">Normal</option>
-                    <option value="realistic">Realistic</option>
-                </select>
+            <!-- Footer -->
+            <div class="panel-footer">
+                <i class="bi bi-shield-check me-1" style="color:var(--primary);"></i>
+                Real-time preview · v2.0.0
             </div>
 
-            <!-- Case 1: Handle Side -->
-            <div class="d-flex justify-content-between align-items-center mt-1">
-                <label class="form-label" for="handle-placement">Handle Side</label>
-                <select id="handle-placement" class="form-select neon-input shadow-none px-2 py-1">
-                    <option value="inside">Inside</option>
-                    <option value="outside">Outside</option>
-                    <option value="both">Both Sides</option>
-                </select>
-            </div>
+        </div><!-- /ctrl-inner -->
+    </div>
 
-            <button id="update-btn" class="btn btn-gradient mt-4 py-2 rounded-3">
-                UPDATE DESIGN
-            </button>
+
+    <!-- ══════════ Canvas Info Bar ══════════ -->
+    <div class="glass canvas-info">
+        <div class="ci-item"><i class="bi bi-grid-3x3"></i><span>Canvas Active</span></div>
+        <div class="ci-sep"></div>
+        <div class="ci-item"><i class="bi bi-cursor"></i><span id="mouse-pos">0, 0</span></div>
+        <div class="ci-sep"></div>
+        <div class="ci-item"><i class="bi bi-zoom-in"></i><span>100%</span></div>
+        <div class="ci-sep"></div>
+        <div class="ci-item">
+            <i class="bi bi-info-circle" style="color:var(--secondary);"></i>
+            <span style="color:var(--secondary);">Drag to pan</span>
         </div>
     </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ── Live stats sync ──
+        const syncStats = () => {
+            const ids = { 'frame-width': 'stat-width', 'frame-height': 'stat-height', 'handle-ghh': 'stat-ghh' };
+            Object.entries(ids).forEach(([src, tgt]) => {
+                const el = document.getElementById(src);
+                const out = document.getElementById(tgt);
+                if (el && out) out.textContent = el.value;
+            });
+        };
+        ['frame-width', 'frame-height', 'handle-ghh'].forEach(id => {
+            document.getElementById(id)?.addEventListener('input', syncStats);
+        });
+
+        // ── Mouse tracker ──
+        document.addEventListener('mousemove', e => {
+            const el = document.getElementById('mouse-pos');
+            if (el) el.textContent = `${e.clientX}, ${e.clientY}`;
+        });
+
+        // ── Reset defaults ──
+        const DEFAULTS = {
+            'frame-width': 500, 'frame-height': 700,
+            'handle-width': 40, 'handle-height': 150,
+            'backset-depth': 10, 'handle-depth': 10, 'handle-ghh': 350,
+            'handle-side': 'right', 'handle-orientation': 'left',
+            'material-style': 'normal', 'handle-placement': 'inside'
+        };
+        document.getElementById('reset-btn')?.addEventListener('click', () => {
+            Object.entries(DEFAULTS).forEach(([id, val]) => {
+                const el = document.getElementById(id);
+                if (el) el.value = val;
+            });
+            syncStats();
+        });
+    </script>
 
     <script type="module" src="./src/main.js"></script>
     <script type="module" src="./src/ui/controls.js"></script>
