@@ -46,9 +46,21 @@ const layout = {
     pdBoxH: height * 0.25,
     boxHeight: height * 0.2,
 };
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
-const cameraDistance = Math.max(width, height) * 0.5
-camera.position.set(width / 2, height / 2, cameraDistance);
+const frustumHeight = height;
+const aspect = window.innerWidth / window.innerHeight;
+const frustumWidth = frustumHeight * aspect;
+
+const camera = new THREE.OrthographicCamera(
+    -frustumWidth / 2,
+    frustumWidth / 2,
+    frustumHeight / 2,
+    -frustumHeight / 2,
+    -100000,
+    100000
+);
+
+camera.position.set(width / 2, height / 2, 1000);
+camera.lookAt(width / 2, height / 2, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
