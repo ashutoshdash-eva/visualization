@@ -695,7 +695,7 @@
 
         <button class="quick-btn"
             style="background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;width:auto;padding:0 10px;font-size:clamp(9px,1.1vh,11px);font-weight:700;letter-spacing:.5px;"
-            title="CAD View" onclick="window.location.href='./cad/index1.html'">
+            title="CAD View" onclick="goToCAD()">
             Show CAD View
         </button>
     </div>
@@ -953,6 +953,20 @@
             });
             syncStats();
         });
+        function goToCAD() {
+            const config = {
+                frameWidth: document.getElementById('frame-width').value,
+                frameHeight: document.getElementById('frame-height').value,
+                handleWidth: document.getElementById('handle-width').value,
+                handleHeight: document.getElementById('handle-height').value,
+                ghh: document.getElementById('handle-ghh').value,
+                mountSide: document.getElementById('handle-side').value,
+                orientation: document.getElementById('handle-orientation').value,
+            };
+
+            localStorage.setItem('cadConfig',JSON.stringify(config));
+            window.location.href = './cad/index1.html';
+        }
     </script>
 
     <script type="module" src="./src/main.js"></script>

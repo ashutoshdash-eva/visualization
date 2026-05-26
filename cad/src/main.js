@@ -1,20 +1,31 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import { FontLoader } from 'three/examples/jsm/Addons.js';
-import { TTFLoader } from 'three/examples/jsm/Addons.js';
+// import { TTFLoader } from 'three/examples/jsm/Addons.js';
 import { TextGeometry } from 'three/examples/jsm/Addons.js';
-import { color } from 'three/tsl';
-import { MOUSE } from 'three/webgpu';
-import { ghh, state } from '../../src/utils/constants';
-import { createShapeMesh } from './createShapeMesh';
-import { addUpwardArrow } from './shapes/addUpwardArrow';
+// import { color } from 'three/tsl';
+// import { MOUSE } from 'three/webgpu';
+// import { ghh, state } from '../../src/utils/constants';
+// import { createShapeMesh } from './createShapeMesh';
+// import { addUpwardArrow } from './shapes/addUpwardArrow';
+
+const config = JSON.parse(localStorage.getItem('cadConfig') || '{}');
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf0f0f0);
 
 
-const windowWidth = state.width;
-const windowHeight = state.height;
+const windowWidth = Number(config.frameWidth);
+const windowHeight = Number(config.frameHeight);
+const ghh = Number(config.ghh);
+const handleWidth = Number(config.handleWidth);
+const handleHeight = Number(config.handleHeight);
+const r = (handleWidth / 6) * 2.2;
+const w = handleWidth / 6;
+const h = handleHeight / 16;
+const h1 = Math.max(windowWidth, windowHeight) * 0.05;
+// const h1 = 30;
+const bw = h1 * 0.5;
 
 const biggestDimension = Math.max(windowWidth, windowHeight);
 
@@ -518,19 +529,19 @@ export const data = addWindow(windowWidth, windowHeight);
 const ox = data.centerX;
 const oy = data.centerY;
 
-function addHandle() {
-    const handleWidth = 40;
-    const handleHeight = 150;
+function addHandle(handleWidth, handleHeight) {
+    // const handleWidth = 40;
+    // const handleHeight = 150;
     const r = (handleWidth / 6) * 2.2;
     const w = handleWidth / 6;
     const h = handleHeight / 16
 
     const handleGroup = new THREE.Group();
-    const lineMat = new THREE.LineBasicMaterial({color:'#000000'});
+    const lineMat = new THREE.LineBasicMaterial({ color: '#000000' });
     const fillMat = new THREE.MeshBasicMaterial({ color: '#f0f0f0' });
 
     const backPlate = new THREE.Path();
-    backPlate.absarc(0, 0, r*1.1, 3 * Math.PI / 2, Math.PI / 2, false);
+    backPlate.absarc(0, 0, r * 1.1, 3 * Math.PI / 2, Math.PI / 2, false);
     backPlate.lineTo(0, 4 * h);
     backPlate.lineTo(-2 * w, 4 * h);
     backPlate.lineTo(-2 * w, -4 * h);
@@ -546,53 +557,59 @@ function addHandle() {
     const shape = new THREE.Shape();
     shape.absarc(0, 0, r, Math.PI / 4, 3 * Math.PI / 3.5, false);
     shape.bezierCurveTo(-4 * r, -h, 0, -r, 0, -3 * h);
-    shape.lineTo(0,-12*h);
-    shape.absarc(r/2,-12*h,r/2,Math.PI,0,false);
+    shape.lineTo(0, -12 * h);
+    shape.absarc(r / 2, -12 * h, r / 2, Math.PI, 0, false);
     shape.lineTo(2 * w, -3 * h);
     shape.bezierCurveTo(2 * w, -2 * h, 3 * w, 0, r * Math.cos(Math.PI / 4), r * Math.sin(Math.PI / 4));
-    
+
     const holePath = new THREE.Path();
     holePath.absarc(0, 0, r / 2, 0, Math.PI * 2, false);
-    
-    const handleFillGeo = new THREE.ShapeGeometry(shape,50);
-    const handle = new THREE.Mesh(handleFillGeo,fillMat);
+
+    const handleFillGeo = new THREE.ShapeGeometry(shape, 50);
+    const handle = new THREE.Mesh(handleFillGeo, fillMat);
     handle.position.z = 0.5;
-    handleGroup.add(handle); 
+    handleGroup.add(handle);
     const shapePoints1 = shape.getPoints(50);
     const handleGeom = new THREE.BufferGeometry().setFromPoints(shapePoints1);
-    const handleLine = new THREE.Line(handleGeom,lineMat)
+    const handleLine = new THREE.Line(handleGeom, lineMat)
     handleLine.position.z = 1.1;
     handleGroup.add(handleLine);
 
     const shapePoints2 = holePath.getPoints(20);
     const holeGeom = new THREE.BufferGeometry().setFromPoints(shapePoints2);
-    const holeMesh = new THREE.Line(holeGeom,lineMat)
+    const holeMesh = new THREE.Line(holeGeom, lineMat)
     holeMesh.position.z = 1.1;
     handleGroup.add(holeMesh);
 
     return handleGroup;
 }
-const handleMeshGroup = addHandle();
-const mountSide = localStorage.getItem('mount-side') ?? 'right';
-switch(mountSide){
+const handleMeshGroup = addHandle(handleWidth, handleHeight);
+
+const mountSide = config.mountSide ?? 'right';
+switch (mountSide) {
     case 'left':
-        handleMeshGroup.position.set(left,bottom+ghh);
+        handleMeshGroup.position.set(left+h1/2, bottom + ghh);
         break;
     case 'right':
-        handleMeshGroup.position.set(right,bottom+ghh);
+        handleMeshGroup.position.set(right-h1/2, bottom + ghh);
         break;
     case 'top':
-        handleMeshGroup.position.set(left+ghh,top);
-        handleMeshGroup.rotation.z = Math.PI/2;
+        handleMeshGroup.position.set(left + ghh, top-h1/2);
+        handleMeshGroup.rotation.z = Math.PI / 2;
         break;
     case 'bottom':
-        handleMeshGroup.position.set(left+ghh,bottom);
-        handleMeshGroup.rotation.z = 3*Math.PI/2;
+        handleMeshGroup.position.set(left + ghh, bottom+h1/2);
+        handleMeshGroup.rotation.z = 3 * Math.PI / 2;
         break;
     default:
-        handleMeshGroup.position.set(right,bottom+ghh);
+        handleMeshGroup.position.set(right / 1.017, bottom + ghh);
 }
 scene.add(handleMeshGroup);
+
+const orientation = config.orientation ?? 'left';
+if(orientation === 'right'){
+    handleMeshGroup.scale.x = -1;
+}
 
 // const ttfLoader = new TTFLoader();
 const loader = new FontLoader();
@@ -715,3 +732,4 @@ function animate() {
     controls.update();
 }
 animate();
+console.log('Loaded config:', config); 
