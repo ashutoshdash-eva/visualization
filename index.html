@@ -695,7 +695,7 @@
 
         <button class="quick-btn"
             style="background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;width:auto;padding:0 10px;font-size:clamp(9px,1.1vh,11px);font-weight:700;letter-spacing:.5px;"
-            title="CAD View" onclick="window.location.href='cad/index.html'">
+            title="CAD View" onclick="window.location.href='./cad/index1.html'">
             Show CAD View
         </button>
     </div>
@@ -751,7 +751,7 @@
                             </label>
                             <div class="input-wrap">
                                 <input type="number" id="frame-width" class="neon-input" value="500">
-                                <span class="input-unit">px</span>
+                                <span class="input-unit">mm</span>
                             </div>
                         </div>
                         <div class="form-row">
@@ -761,7 +761,7 @@
                             </label>
                             <div class="input-wrap">
                                 <input type="number" id="frame-height" class="neon-input" value="700">
-                                <span class="input-unit">px</span>
+                                <span class="input-unit">mm</span>
                             </div>
                         </div>
                     </div>
@@ -793,17 +793,17 @@
                             </div>
                         </div>
                         <div class="form-row">
-                            <label class="form-label-custom" for="backset-depth">
-                                <i class="bi bi-arrow-bar-right lbl-icon"></i>Backset
+                            <label class="form-label-custom" for="backplate-depth">
+                                <i class="bi bi-arrow-bar-right lbl-icon"></i>Backplate Depth
                             </label>
                             <div class="input-wrap">
-                                <input type="number" id="backset-depth" class="neon-input" value="10">
+                                <input type="number" id="backplate-depth" class="neon-input" value="10">
                                 <span class="input-unit">mm</span>
                             </div>
                         </div>
                         <div class="form-row">
                             <label class="form-label-custom" for="handle-depth">
-                                <i class="bi bi-layers lbl-icon"></i>Depth
+                                <i class="bi bi-layers lbl-icon"></i>Handle Depth
                             </label>
                             <div class="input-wrap">
                                 <input type="number" id="handle-depth" class="neon-input" value="10">
@@ -812,7 +812,7 @@
                         </div>
                         <div class="form-row">
                             <label class="form-label-custom" for="handle-ghh">
-                                <i class="bi bi-crosshair lbl-icon"></i>GHH Pos
+                                <i class="bi bi-crosshair lbl-icon"></i>GHH
                             </label>
                             <div class="input-wrap">
                                 <input type="number" id="handle-ghh" class="neon-input" value="350">
@@ -942,7 +942,7 @@
         const DEFAULTS = {
             'frame-width': 500, 'frame-height': 700,
             'handle-width': 40, 'handle-height': 150,
-            'backset-depth': 10, 'handle-depth': 10, 'handle-ghh': 350,
+            'backplate-depth': 10, 'handle-depth': 10, 'handle-ghh': 350,
             'handle-side': 'right', 'handle-orientation': 'left',
             'material-style': 'normal', 'handle-placement': 'inside'
         };

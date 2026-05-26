@@ -71,8 +71,8 @@ export function buildHandle() {
 
         const geometry = new THREE.ExtrudeGeometry(shape, {
             depth: handleDepth,
-            bevelEnabled: false,
-            curveSegments: 100
+            bevelEnabled: false
+            // curveSegments: 100
         });
         const material = new THREE.MeshPhysicalMaterial({
             color: '#546c83',
@@ -118,7 +118,6 @@ export function buildHandle() {
 
         const arcGeo = new THREE.ExtrudeGeometry(shape3, {
             bevelEnabled: false,
-            curveSegments: 100,
             depth: handleDepth
         });
         const arcMat = new THREE.MeshPhysicalMaterial({

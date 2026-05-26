@@ -5,7 +5,9 @@ import { TTFLoader } from 'three/examples/jsm/Addons.js';
 import { TextGeometry } from 'three/examples/jsm/Addons.js';
 import { color } from 'three/tsl';
 import { MOUSE } from 'three/webgpu';
-import { state } from '../../src/utils/constants';
+import { ghh, state } from '../../src/utils/constants';
+import { createShapeMesh } from './createShapeMesh';
+import { addUpwardArrow } from './shapes/addUpwardArrow';
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf0f0f0);
@@ -254,6 +256,10 @@ function createShapeBox() {
     addArrow(slotStep * 2.5, centerY, boxHeight);
     addLeftArrow(slotStep * 3.5, centerY, boxHeight);
     addRightArrow(slotStep * 4.5, centerY, boxHeight);
+    // const upwardArrowPoints = addUpwardArrow(slotStep * 2.5, centerY, boxHeight);
+    // const upwardArrowMesh = createShapeMesh(upwardArrowPoints);
+
+
 
 }
 
@@ -308,11 +314,14 @@ function addArrow(centerX, centerY, boxHeight) {
         new THREE.Vector3(centerX, topY, 0),
         new THREE.Vector3(centerX + headSize, centerY + headSize)
     );
+
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
     const material = new THREE.LineBasicMaterial({ color: '#000000' });
     const arrow = new THREE.Line(geometry, material);
     scene.add(arrow);
 }
+
+
 
 function addRightArrow(centerX, centerY, boxHeight) {
     const arrowHeight = boxHeight / 3;
@@ -485,13 +494,93 @@ function addWindow(windowWidth = 100, windowHeight = 100) {
     ];
     scene.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(plusPoints), new THREE.LineBasicMaterial({ color: '#000000' })));
 
-    function addhandle() {
-        const handle = new THREE.Shape();
-        handle.moveTo(right, (top - bottom) / 2, 0);
-        handle.lineTo()
+    return {
+        centerX,
+        centerY
     }
+
 }
-addWindow(windowWidth, windowHeight);
+export const data = addWindow(windowWidth, windowHeight);
+// console.log(data);
+
+const ox = data.centerX;
+const oy = data.centerY;
+
+function addHandle() {
+    const handleWidth = 40;
+    const handleHeight = 150;
+    const r = (handleWidth / 6) * 2.2;
+    const w = handleWidth / 6;
+    const h = handleHeight / 16
+
+    const handleGroup = new THREE.Group();
+    const lineMat = new THREE.LineBasicMaterial({color:'#000000'});
+    const fillMat = new THREE.MeshBasicMaterial({ color: '#f0f0f0' });
+
+    const backPlate = new THREE.Path();
+    backPlate.absarc(0, 0, r*1.1, 3 * Math.PI / 2, Math.PI / 2, false);
+    backPlate.lineTo(0, 4 * h);
+    backPlate.lineTo(-2 * w, 4 * h);
+    backPlate.lineTo(-2 * w, -4 * h);
+    backPlate.lineTo(0, -4 * h);
+    backPlate.closePath();
+
+    const shapePoints = backPlate.getPoints(20);
+    const backPlateGeom = new THREE.BufferGeometry().setFromPoints(shapePoints);
+    const backPlateLine = new THREE.Line(backPlateGeom, lineMat);
+    backPlateLine.position.z = 0;
+    handleGroup.add(backPlateLine);
+
+    const shape = new THREE.Shape();
+    shape.absarc(0, 0, r, Math.PI / 4, 3 * Math.PI / 3.5, false);
+    shape.bezierCurveTo(-4 * r, -h, 0, -r, 0, -3 * h);
+    shape.lineTo(0,-12*h);
+    shape.absarc(r/2,-12*h,r/2,Math.PI,0,false);
+    shape.lineTo(2 * w, -3 * h);
+    shape.bezierCurveTo(2 * w, -2 * h, 3 * w, 0, r * Math.cos(Math.PI / 4), r * Math.sin(Math.PI / 4));
+    
+    const holePath = new THREE.Path();
+    holePath.absarc(0, 0, r / 2, 0, Math.PI * 2, false);
+    
+    const handleFillGeo = new THREE.ShapeGeometry(shape,50);
+    const handle = new THREE.Mesh(handleFillGeo,fillMat);
+    handle.position.z = 0.5;
+    handleGroup.add(handle); 
+    const shapePoints1 = shape.getPoints(50);
+    const handleGeom = new THREE.BufferGeometry().setFromPoints(shapePoints1);
+    const handleLine = new THREE.Line(handleGeom,lineMat)
+    handleLine.position.z = 1.1;
+    handleGroup.add(handleLine);
+
+    const shapePoints2 = holePath.getPoints(20);
+    const holeGeom = new THREE.BufferGeometry().setFromPoints(shapePoints2);
+    const holeMesh = new THREE.Line(holeGeom,lineMat)
+    holeMesh.position.z = 1.1;
+    handleGroup.add(holeMesh);
+
+    return handleGroup;
+}
+const handleMeshGroup = addHandle();
+const mountSide = localStorage.getItem('mount-side') ?? 'right';
+switch(mountSide){
+    case 'left':
+        handleMeshGroup.position.set(left,bottom+ghh);
+        break;
+    case 'right':
+        handleMeshGroup.position.set(right,bottom+ghh);
+        break;
+    case 'top':
+        handleMeshGroup.position.set(left+ghh,top);
+        handleMeshGroup.rotation.z = Math.PI/2;
+        break;
+    case 'bottom':
+        handleMeshGroup.position.set(left+ghh,bottom);
+        handleMeshGroup.rotation.z = 3*Math.PI/2;
+        break;
+    default:
+        handleMeshGroup.position.set(right,bottom+ghh);
+}
+scene.add(handleMeshGroup);
 
 // const ttfLoader = new TTFLoader();
 const loader = new FontLoader();
@@ -511,89 +600,93 @@ function addText(text, x, y, size = height * 0.012, color = '#000000') {
     mesh.position.set(x, y, 0);
     scene.add(mesh);
 }
+const textItems = [
+    {
+        text: 'Design Name:-',
+        x: width - panelWidth + panelWidth * 0.02,
+        y: height - height * 0.02,
+    },
+    {
+        text: 'Org name:-',
+        x: width - panelWidth + panelWidth * 0.02,
+        y: height - height * 0.12,
+    },
+    {
+        text: 'Project Id:-',
+        x: width - panelWidth + panelWidth * 0.52,
+        y: height - height * 0.12,
+    },
+    {
+        text: 'Lorem ipsum...',
+        x: width - panelWidth + panelWidth * 0.02,
+        y: height - height * 0.22,
+        color: '#636262',
+    },
+    {
+        text: 'Design Details:-',
+        x: width - panelWidth + panelWidth * 0.02,
+        y: height - height * 0.32,
+    },
+    {
+        text: 'Date:-',
+        x: width - panelWidth + panelWidth * 0.02,
+        y: height - height * 0.52,
+    },
+    {
+        text: 'Developer\nName:-',
+        x: width - panelWidth + panelWidth * 0.77,
+        y: height - height * 0.62,
+    },
+    {
+        text: 'Hardware details:-',
+        x: width - panelWidth + panelWidth * 0.02,
+        y: height - height * 0.62,
+    },
+    {
+        text: 'Design dimensions:-',
+        x: width - panelWidth + panelWidth * 0.02,
+        y: height - height * 0.77,
+    },
+    {
+        text: 'Scale factor:-',
+        x: width - panelWidth + panelWidth * 0.02,
+        y: height - height * 0.845,
+    },
+    {
+        text: 'Signature:-',
+        x: width - panelWidth + panelWidth * 0.02,
+        y: height - height * 0.92,
+    },
+    {
+        text: 'Ashutosh Dash',
+        x: pdBoxW - pdBoxW / 1.55,
+        y: height - pdBoxH * 0.2,
+    },
+    {
+        text: 'EvA/304',
+        x: pdBoxW - pdBoxW / 1.75,
+        y: height - pdBoxH * 0.4,
+    },
+    {
+        text: 'Configurator Developer',
+        x: pdBoxW - pdBoxW / 1.35,
+        y: height - pdBoxH * 0.65,
+    },
+    {
+        text: `${windowWidth}`,
+        x: centerX - dimOffset / 2,
+        y: dimY - dimOffset * 0.12,
+    },
+    {
+        text: `${windowHeight}`,
+        x: dimX - dimOffset * 0.5,
+        y: centerY - dimOffset / 5,
+    },
+];
+textItems.forEach(({ text, x, y }) => {
+    addText(text, x, y);
+});
 
-addText(
-    'Design Name:-',
-    width - panelWidth + panelWidth * 0.02,
-    height - height * 0.02,
-);
-addText(
-    'Org name:-',
-    width - panelWidth + panelWidth * 0.02,
-    height - height * 0.12,
-);
-addText(
-    'Project Id:-',
-    width - panelWidth + panelWidth * 0.52,
-    height - height * 0.12,
-);
-addText(
-    'Lorem ipsum...',
-    width - panelWidth + panelWidth * 0.02,
-    height - height * 0.22,
-    undefined,
-    '#636262'
-);
-addText(
-    'Design Details:-',
-    width - panelWidth + panelWidth * 0.02,
-    height - height * 0.32,
-);
-addText(
-    'Date:-',
-    width - panelWidth + panelWidth * 0.02,
-    height - height * 0.52,
-);
-addText(
-    'Developer\nName:-',
-    width - panelWidth + panelWidth * 0.77,
-    height - height * 0.62,
-);
-addText(
-    'Hardware details:-',
-    width - panelWidth + panelWidth * 0.02,
-    height - height * 0.62,
-);
-addText(
-    'Design dimensions:-',
-    width - panelWidth + panelWidth * 0.02,
-    height - height * 0.77,
-);
-addText(
-    'Scale factor:-',
-    width - panelWidth + panelWidth * 0.02,
-    height - height * 0.845,
-);
-addText(
-    'Signature:-',
-    width - panelWidth + panelWidth * 0.02,
-    height - height * 0.92,
-);
-addText(
-    'Ashutosh Dash',
-    pdBoxW - pdBoxW / 1.55,
-    height - pdBoxH * 0.2,
-);
-addText(
-    'EvA/304',
-    pdBoxW - pdBoxW / 1.75,
-    height - pdBoxH * 0.4,
-);
-addText(
-    'Configurator Developer',
-    pdBoxW - pdBoxW / 1.35,
-    height - pdBoxH * 0.65,
-);
-addText(
-    `${windowWidth}`,
-    centerX - dimOffset / 2,
-    dimY - dimOffset * 0.12
-);
-addText(
-    `${windowHeight}`,
-    dimX - dimOffset * 0.5,
-    centerY - dimOffset / 5
-);
 
 
 
