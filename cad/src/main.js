@@ -584,7 +584,7 @@ scene.add(handleMeshGroup);
 
 // const ttfLoader = new TTFLoader();
 const loader = new FontLoader();
-const font = await loader.loadAsync('./src/fonts/helvetiker_regular.typeface.json');
+const font = await loader.loadAsync('/fonts/helvetiker_regular.typeface.json');
 
 function addText(text, x, y, size = height * 0.012, color = '#000000') {
 
