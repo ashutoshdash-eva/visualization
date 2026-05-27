@@ -534,18 +534,25 @@ function addHandle(handleWidth, handleHeight) {
     // const handleHeight = 150;
     const r = (handleWidth / 6) * 2.2;
     const w = handleWidth / 6;
-    const h = handleHeight / 16
+    const h = handleHeight / 16;
 
     const handleGroup = new THREE.Group();
     const lineMat = new THREE.LineBasicMaterial({ color: '#000000' });
     const fillMat = new THREE.MeshBasicMaterial({ color: '#f0f0f0' });
 
     const backPlate = new THREE.Path();
-    backPlate.absarc(0, 0, r * 1.1, 3 * Math.PI / 2, Math.PI / 2, false);
+    // backPlate.absarc(0, 0, r * 1.1, 3 * Math.PI / 2, Math.PI / 2, false);
+    backPlate.moveTo(w,2.2*h);
+    // backPlate.lineTo(2*w,h);
     backPlate.lineTo(0, 4 * h);
     backPlate.lineTo(-2 * w, 4 * h);
     backPlate.lineTo(-2 * w, -4 * h);
     backPlate.lineTo(0, -4 * h);
+    backPlate.lineTo(w,-2.2*h);
+    backPlate.lineTo(2*w,-1.2*h);
+    backPlate.lineTo(2*w,1.2*h);
+
+
     backPlate.closePath();
 
     const shapePoints = backPlate.getPoints(20);
@@ -580,6 +587,27 @@ function addHandle(handleWidth, handleHeight) {
     const holeMesh = new THREE.Line(holeGeom, lineMat)
     holeMesh.position.z = 1.1;
     handleGroup.add(holeMesh);
+
+    const screw1 = new THREE.Path();
+    screw1.absarc(-w,3*h,w/2,Math.PI,-Math.PI,true);
+    screw1.lineTo(-1.5*w,3*h);
+    screw1.lineTo(-2*w,3*h);
+    
+    const screwPoints1 = screw1.getPoints(20);
+    const screwGeom1 = new THREE.BufferGeometry().setFromPoints(screwPoints1);
+    
+    const screw2 = new THREE.Path();
+    screw2.absarc(-w,-3*h,w/2,Math.PI,-Math.PI,true);
+    screw2.lineTo(-1.5*w,-3*h);
+    screw2.lineTo(-2*w,-3*h);
+
+    const screwPoints2 = screw2.getPoints(20);
+    const screwGeom2 = new THREE.BufferGeometry().setFromPoints(screwPoints2);
+    
+    const screwMesh1 = new THREE.Line(screwGeom1,lineMat);
+    handleGroup.add(screwMesh1);
+    const screwMesh2 = new THREE.Line(screwGeom2,lineMat);
+    handleGroup.add(screwMesh2);
 
     return handleGroup;
 }
