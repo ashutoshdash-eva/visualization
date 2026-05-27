@@ -953,6 +953,59 @@
             });
             syncStats();
         });
+        // document.addEventListener('DOMContentLoaded', () => {
+        //     const savedConfigStr = localStorage.getItem('cadConfig');
+        //     if (savedConfigStr) {
+        //         try {
+        //             const config = JSON.parse(savedConfigStr);
+        //             const mapping = {
+        //                 frameWidth:'frame-width',
+        //                 frameHeight:'frame-height',
+        //                 handleWidth:'handle-width',
+        //                 handleWidth:'handle-height',
+        //                 ghh:'handle-ghh',
+        //                 mountSide:'handle-side',
+        //                 orientation:'handle-orientation',
+        //                 backplateDepth:'backplate-depth',
+        //                 handleDepth:'handle-depth',
+        //                 viewType:'material-style',
+        //                 handlePlacement:'handle-placement'
+        //             }
+        //         }
+        //     }
+        // })
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedConfigStr = localStorage.getItem('cadConfig');
+            if (savedConfigStr) {
+                try {
+                    const config = JSON.parse(savedConfigStr);
+                    const mapping = {
+                        frameWidth: 'frame-width',
+                        frameHeight: 'frame-height',
+                        handleWidth: 'handle-width',
+                        handleHeight: 'handle-height',
+                        ghh: 'handle-ghh',
+                        mountSide: 'handle-side',
+                        orientation: 'handle-orientation',
+                        backplateDepth: 'backplate-depth',
+                        handleDepth: 'handle-depth',
+                        viewType: 'material-style',
+                        handlePlacement: 'handle-placement'
+                    };
+                    Object.entries(mapping).forEach(([configKey, elementId]) => {
+                        const el = document.getElementById(elementId);
+                        if (el && config[configKey] !== undefined) {
+                            el.value = config[configKey];
+                        }
+                    });
+                    syncStats();
+                    document.getElementById('update-btn')?.click();
+                } catch (e) {
+                    console.warn('Failed to restore config:', e);
+                }
+            }
+        });
+
         function goToCAD() {
             const config = {
                 frameWidth: document.getElementById('frame-width').value,
@@ -962,9 +1015,13 @@
                 ghh: document.getElementById('handle-ghh').value,
                 mountSide: document.getElementById('handle-side').value,
                 orientation: document.getElementById('handle-orientation').value,
+                backplateDepth: document.getElementById('backplate-depth').value,
+                handleDepth: document.getElementById('handle-depth').value,
+                viewType: document.getElementById('material-style').value,
+                handlePlacement: document.getElementById('handle-placement').value
             };
 
-            localStorage.setItem('cadConfig',JSON.stringify(config));
+            localStorage.setItem('cadConfig', JSON.stringify(config));
             window.location.href = './cad/index1.html';
         }
     </script>

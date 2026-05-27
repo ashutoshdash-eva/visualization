@@ -44,7 +44,7 @@ export function buildHandle() {
         shapeBottom.absarc(-w, -3 * h, r);
 
         const geometry = new THREE.ExtrudeGeometry([shapeTop, shapeBottom], {
-            depth: backPlateDepth + 0.4
+            depth: backPlateDepth
         });
         const material = new THREE.MeshBasicMaterial({ color: '#868686' });
         const screw = new THREE.Mesh(geometry, material);
@@ -111,10 +111,10 @@ export function buildHandle() {
         handle.add(handleMesh);
 
         const shape3 = new THREE.Shape();
-        shape3.moveTo(0, -8 * h);
+        shape3.moveTo(0, -7 * h);
         shape3.lineTo(0, -16 * h);
         shape3.absarc(w, -16 * h, w, Math.PI, 0, false);
-        shape3.lineTo(2 * w, -8 * h);
+        shape3.lineTo(2 * w, -7 * h);
 
         const arcGeo = new THREE.ExtrudeGeometry(shape3, {
             bevelEnabled: false,
@@ -127,7 +127,7 @@ export function buildHandle() {
         });
         const arcMesh = new THREE.Mesh(arcGeo, arcMat);
         arcMesh.position.z += handleDepth;
-        arcMesh.position.y += handleDepth;
+        // arcMesh.position.y += handleDepth;
         handleMesh.add(arcMesh);
         return handle;
 
