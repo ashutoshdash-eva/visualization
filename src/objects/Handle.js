@@ -38,6 +38,7 @@ export function buildHandle() {
 
     function createScrew() {
         const r = Math.min(w / 2, h / 2);
+
         const shapeTop = new THREE.Shape();
         shapeTop.absarc(-w, 3 * h, r);
         const shapeBottom = new THREE.Shape();
@@ -48,8 +49,32 @@ export function buildHandle() {
         });
         const material = new THREE.MeshBasicMaterial({ color: '#868686' });
         const screw = new THREE.Mesh(geometry, material);
+
+        const plusGroup = new THREE.Group();
+        const plusMat = new THREE.MeshBasicMaterial({ color: '#000000' });
+
+
+        const slotLength = r * 1.2;
+        const slotThickness = r * 0.2;
+        const slotDepth = 0.5;
+
+
+        const horizGeom = new THREE.BoxGeometry(slotLength, slotThickness, slotDepth);
+        const horizMesh = new THREE.Mesh(horizGeom, plusMat);
+
+        const vertGeom = new THREE.BoxGeometry(slotThickness, slotLength, slotDepth);
+        const vertMesh = new THREE.Mesh(vertGeom, plusMat);
+        plusGroup.add(horizMesh, vertMesh);
+        plusGroup.position.set(-w, 3 * h, backPlateDepth + (slotDepth / 2));
+        screw.add(plusGroup);
+        
+        const bottomPlusGroup = plusGroup.clone();
+        bottomPlusGroup.position.set(-w, -3 * h, backPlateDepth + (slotDepth / 2));
+        screw.add(bottomPlusGroup);
+
         return screw;
     }
+
 
 
     function createHandle() {
@@ -68,6 +93,8 @@ export function buildHandle() {
         shape.bezierCurveTo(-4 * r, -h, 0, -r, 0, -3 * h);
         shape.lineTo(2 * w, -3 * h);
         shape.bezierCurveTo(2 * w, -2 * h, 3 * w, 0, r * Math.cos(Math.PI / 4), r * Math.sin(Math.PI / 4));
+        // shape.bezierCurveTo(r * Math.cos(Math.PI / 4), r * Math.sin(Math.PI / 4),r * Math.cos(Math.PI / 3.7), r * Math.sin(Math.PI / 3.7),r * Math.cos(Math.PI / 3.5), r * Math.sin(Math.PI / 3.5));
+
 
         const geometry = new THREE.ExtrudeGeometry(shape, {
             depth: handleDepth,
