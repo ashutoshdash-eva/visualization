@@ -1,19 +1,41 @@
 import * as THREE from 'three';
 import { scene } from '../scene/setupScene';
 import { state, COLORS } from '../utils/constants';
+// const { width, height } = state;
 
 const textureLoader = new THREE.TextureLoader();
-export const textureMaterial = new THREE.MeshStandardMaterial({
-    map: textureLoader.load('texture/raw_plank_wall_diff_2k.png'),
-    normalMap: textureLoader.load('texture/raw_plank_wall_nor_gl_2k.png'),
-    aoMap: textureLoader.load('texture/raw_plank_wall_arm_2k.png'),
-    roughnessMap: textureLoader.load('texture/raw_plank_wall_arm_2k.png'),
-    metalnessMap: textureLoader.load('texture/raw_plank_wall_arm_2k.png'),
 
-    displacementMap:textureLoader.load('texture/raw_plank_wall_disp_2k.png'),
-    displacementScale:0.05
+const colorMap = textureLoader.load('texture/raw_plank_wall_diff_2k.png');
+const normal = textureLoader.load('texture/raw_plank_wall_nor_gl_2k.png');
+const arm = textureLoader.load('texture/raw_plank_wall_arm_2k.png'); //ao/roughness/metalness
+const displacement = textureLoader.load('texture/raw_plank_wall_disp_2k.png');
 
+colorMap.colorSpace = THREE.SRGBColorSpace;
+const maps = [colorMap,normal,arm,displacement];
+maps.forEach(map=>{
+    if(map){
+        map.wrapS = THREE.RepeatWrapping;
+        map.wrapT = THREE.RepeatWrapping;
+    }
 })
+// colorMap.repeat.set(width, 1);
+
+export const textureMaterial = new THREE.MeshStandardMaterial({
+    map: colorMap,
+    normalMap: normal,
+    // aoMap: arm,
+    roughnessMap: arm,
+    metalnessMap: arm,
+
+    displacementMap: displacement,
+    displacementScale: 0
+
+});
+
+// colorMap.wrapS = THREE.RepeatWrapping;
+// normal.wrapS = THREE.RepeatWrapping;
+// colorMap.wrapT = THREE.RepeatWrapping;
+// normal.wrapT = THREE.RepeatWrapping;
 
 export const frameMeshes = [];
 export let pathArray = [];
@@ -67,16 +89,22 @@ export function buildFrame() {
 
         const geometry = new THREE.ExtrudeGeometry(createFrameShape(), {
             bevelEnabled: false,
-            extrudePath: edge
+            extrudePath: edge,
+            // UVGenerator: THREE.ExtrudeGeometry.BoundingBoxUVGenerator
         });
 
         // const material = new THREE.MeshStandardMaterial({ color: COLORS.frame });
         // const material = new THREE.MeshStandardMaterial({ color: COLORS.frame });
         const pos = geometry.attributes.position;
+        console.log(geometry.attributes.uv);
+        const uvs = geometry.attributes.uv;
+
+        const textureScale = 0.005;
 
         for (let i = 0; i < pos.count; i++) {
             let x = pos.getX(i);
             let y = pos.getY(i);
+            let z = pos.getZ(i);
 
             if (index === 0) {
                 if (x === 0) pos.setX(i, y);
@@ -91,9 +119,26 @@ export function buildFrame() {
                 if (y === 0) pos.setY(i, x);
                 else if (y === height) pos.setY(i, height - x);
             }
+
+            let newX = pos.getX(i);
+            let newY = pos.getY(i);
+
+            if(index ===0 || index ===2){
+                let finalU = newX*textureScale;
+                let finalV = (newY+z)*textureScale;
+
+                uvs.setXY(i,finalU,finalV);
+            }
+            else{
+                let finalU = newY*textureScale;
+                let finalV = (newX+z)*textureScale;
+
+                uvs.setXY(i,finalU,finalV);
+            }
         }
 
         pos.needsUpdate = true;
+        uvs.needsUpdate = true;
         geometry.computeVertexNormals();
 
         const edges = new THREE.EdgesGeometry(geometry);
