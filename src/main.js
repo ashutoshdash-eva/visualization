@@ -128,8 +128,8 @@ buildGlass();
 setupSelection();
 rebuildHandle();
 
-const grdHlp = new THREE.GridHelper(500, 500);
-scene.add(grdHlp);
+// const grdHlp = new THREE.GridHelper(500, 500);
+// scene.add(grdHlp);
 
 function animate() {
     requestAnimationFrame(animate);

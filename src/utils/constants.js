@@ -6,8 +6,8 @@ export const offset = 30;
 export const beadOffset = 20;
 
 export const COLORS = {
-    frame: '#5a3e2b',
-    bead: '#f2e8dc',
+    frame: '#ffffff',
+    bead: '#222222',
     highlight: 0x00ffff,
     secondary: '#0400ff',
     edge: '#3e2a1f',

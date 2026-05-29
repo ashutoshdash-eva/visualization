@@ -124,7 +124,7 @@ export function buildFrame() {
             let newY = pos.getY(i);
 
             if(index ===0 || index ===2){
-                let finalU = newX*textureScale;
+                let finalU = (newX)*textureScale;
                 let finalV = (newY+z)*textureScale;
 
                 uvs.setXY(i,finalU,finalV);
@@ -147,7 +147,7 @@ export function buildFrame() {
             new THREE.LineBasicMaterial({ color: COLORS.edge })
         );
 
-        const mesh = new THREE.Mesh(geometry, textureMaterial);
+        const mesh = new THREE.Mesh(geometry, textureMaterial.clone()); //for using raycaster in textured area
         mesh.add(line);
         scene.add(mesh);
         frameMeshes.push(mesh);

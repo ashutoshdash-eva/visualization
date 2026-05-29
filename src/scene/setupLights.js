@@ -6,6 +6,6 @@ export function setupLights() {
     scene.add(ambientLight);
 
     const dirLight = new THREE.DirectionalLight(0xffffff, 5);
-    dirLight.position.set(500, 1000, 1000);
+    dirLight.position.set(0, 800, 1000);
     scene.add(dirLight);
 }

@@ -46,7 +46,11 @@ export function buildBeads() {
             curveSegments: 120
         });
 
-        const material = new THREE.MeshStandardMaterial({ color: COLORS.bead });
+        const material = new THREE.MeshStandardMaterial({ 
+            color: COLORS.bead,
+            roughness:0.85,
+            metalness:0.2,
+        });
         const pos = geometry.attributes.position;
 
         for (let i = 0; i < pos.count; i++) {
