@@ -29,10 +29,10 @@ export function buildGlass() {
     const glassMaterial = new THREE.MeshPhysicalMaterial({
         color: COLORS.glass,
         metalness: 0.05,
-        roughness: 0.05,
-        transmission: 0.95,
+        roughness: 0.0,
+        transmission: 1.0,
         thickness: glassThickness,
-        ior: 1,
+        ior: 1.5,
         dispersion: 5.0,
         side: THREE.DoubleSide
     });
