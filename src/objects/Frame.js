@@ -2,18 +2,18 @@ import * as THREE from 'three';
 import { scene } from '../scene/setupScene';
 import { state, COLORS } from '../utils/constants';
 
-// const textureLoader = new THREE.TextureLoader();
-// export const textureMaterial = new THREE.MeshStandardMaterial({
-//     map: textureLoader.load('texture/raw_plank_wall_diff_2k.png'),
-//     normalMap: textureLoader.load('texture/raw_plank_wall_nor_gl_2k.png'),
-//     aoMap: textureLoader.load('texture/raw_plank_wall_arm_2k.png'),
-//     roughnessMap: textureLoader.load('texture/raw_plank_wall_arm_2k.png'),
-//     metalnessMap: textureLoader.load('texture/raw_plank_wall_arm_2k.png'),
+const textureLoader = new THREE.TextureLoader();
+export const textureMaterial = new THREE.MeshStandardMaterial({
+    map: textureLoader.load('texture/raw_plank_wall_diff_2k.png'),
+    normalMap: textureLoader.load('texture/raw_plank_wall_nor_gl_2k.png'),
+    aoMap: textureLoader.load('texture/raw_plank_wall_arm_2k.png'),
+    roughnessMap: textureLoader.load('texture/raw_plank_wall_arm_2k.png'),
+    metalnessMap: textureLoader.load('texture/raw_plank_wall_arm_2k.png'),
 
-//     displacementMap:textureLoader.load('texture/raw_plank_wall_disp_2k.png'),
-//     displacementScale:0.05
+    displacementMap:textureLoader.load('texture/raw_plank_wall_disp_2k.png'),
+    displacementScale:0.05
 
-// })
+})
 
 export const frameMeshes = [];
 export let pathArray = [];
@@ -71,7 +71,7 @@ export function buildFrame() {
         });
 
         // const material = new THREE.MeshStandardMaterial({ color: COLORS.frame });
-        const material = new THREE.MeshStandardMaterial({ color: COLORS.frame });
+        // const material = new THREE.MeshStandardMaterial({ color: COLORS.frame });
         const pos = geometry.attributes.position;
 
         for (let i = 0; i < pos.count; i++) {
@@ -102,7 +102,7 @@ export function buildFrame() {
             new THREE.LineBasicMaterial({ color: COLORS.edge })
         );
 
-        const mesh = new THREE.Mesh(geometry, material);
+        const mesh = new THREE.Mesh(geometry, textureMaterial);
         mesh.add(line);
         scene.add(mesh);
         frameMeshes.push(mesh);
