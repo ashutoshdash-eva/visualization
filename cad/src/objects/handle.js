@@ -5,10 +5,10 @@ import { data } from '../main';
 const ox = data.centerX;
 const oy = data.centerY;
 
-function addHandle(){
+function addHandle() {
     const handleWidth = 40;
     const handleHeight = 150;
     const shape = new THREE.Shape();
-    shape.moveTo(0,0);
+    shape.moveTo(0, 0);
     shape.lineTo();
 }

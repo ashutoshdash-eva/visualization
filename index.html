@@ -1,761 +1,1104 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Window Configurator</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-
-    <style>
-        :root {
-            --primary: #00BFA6;
-            --primary-light: #33ffd5;
-            --primary-dark: #008775;
-            --secondary: #6C5CE7;
-            --accent: #fd79a8;
-            --bg-main: #060608;
-            --text-primary: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.75);
-            --text-muted: rgba(255, 255, 255, 0.45);
-            --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.5);
-            --radius-sm: 8px;
-            --radius-md: 14px;
-            --radius-lg: 20px;
-            --transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-
-            /* Dynamic spacing */
-            --gap: clamp(6px, 1vh, 12px);
-            --pad: clamp(12px, 1.5vh, 20px);
-            --row-py: clamp(4px, 0.8vh, 8px);
-            --fs-label: clamp(10px, 1.1vh, 12px);
-            --fs-input: clamp(11px, 1.2vh, 13px);
-            --fs-section: clamp(9px, 1vh, 11px);
-            --input-h: clamp(28px, 3.5vh, 36px);
-            /* Increased input width to prevent longer text (like "Left Cockspur") from cutting off */
-            --input-w: clamp(110px, 12vw, 135px);
-            --stat-pad: clamp(6px, 0.9vh, 10px);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        /* ── Scrollbar ── */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: rgba(0, 191, 166, 0.5); border-radius: 10px; }
-
-        body {
-            overflow: hidden;
-            background: var(--bg-main);
-            font-family: 'Outfit', sans-serif;
-            color: var(--text-primary);
-            height: 100vh;
-            width: 100vw;
-        }
-
-        /* ── Mesh Background & Orbs (from previous design) ── */
-        .bg-mesh {
-            position: fixed; inset: 0; z-index: -2;
-            background:
-                radial-gradient(ellipse 80% 60% at 20% 10%, rgba(108,92,231,0.12) 0%, transparent 60%),
-                radial-gradient(ellipse 60% 50% at 80% 80%, rgba(0,191,166,0.10) 0%, transparent 60%),
-                #060608;
-        }
-        .bg-grid {
-            position: fixed; inset: 0; z-index: -1;
-            background-image:
-                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-            background-size: 40px 40px;
-            mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, black 20%, transparent 100%);
-        }
-        .orb {
-            position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: -1;
-            animation: orb-drift 20s ease-in-out infinite alternate;
-        }
-        .orb-1 { width: 400px; height: 400px; background: rgba(108,92,231,0.15); top: -100px; left: -100px; animation-duration: 25s; }
-        .orb-2 { width: 300px; height: 300px; background: rgba(0,191,166,0.15); bottom: -50px; right: -50px; animation-duration: 18s; animation-delay: -8s; }
-
-        @keyframes orb-drift {
-            0%   { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(30px, 40px) scale(1.1); }
-        }
-
-        /* ── Glass ── */
-        .glass {
-            background: rgba(12, 12, 18, 0.65);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.05);
-        }
-
-        /* ════════════════════════════
-            PROFILE CARD
-        ════════════════════════════ */
-        .profile-card {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-            border-radius: 50px;
-            padding: clamp(6px, 1vh, 10px) clamp(16px, 1.5vw, 20px) clamp(6px, 1vh, 10px) clamp(8px, 1vh, 12px);
-            display: flex;
-            align-items: center;
-            gap: clamp(10px, 1.2vw, 16px);
-            animation: slideLeft .6s cubic-bezier(.175, .885, .32, 1.275) both;
-            transition: border-color 0.3s ease;
-        }
-        .profile-card:hover {
-            border-color: rgba(0,191,166,0.3);
-            box-shadow: var(--shadow-lg), 0 0 20px rgba(0,191,166,0.1);
-        }
-
-        .avatar-ring {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            padding: 2.5px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            position: relative;
-        }
-
-        .avatar-inner {
-            background: #0a0a10;
-            border-radius: 50%;
-            width: clamp(38px, 4.5vh, 46px);
-            height: clamp(38px, 4.5vh, 46px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .avatar-inner img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-
-        .status-dot {
-            width: 10px; height: 10px;
-            background: #00BFA6;
-            border-radius: 50%;
-            border: 2px solid #060608;
-            position: absolute; bottom: 0; right: 0;
-            animation: pulseDot 2s infinite;
-        }
-
-        .profile-name {
-            font-size: clamp(12px, 1.4vh, 14px);
-            font-weight: 600;
-            color: var(--text-primary);
-            line-height: 1.1;
-            white-space: nowrap;
-        }
-
-        .profile-badge {
-            font-size: clamp(9px, 1vh, 10px);
-            font-weight: 400;
-            color: var(--text-muted);
-            white-space: nowrap;
-        }
-
-        .profile-sep {
-            width: 1px; height: 28px;
-            background: rgba(255, 255, 255, .1);
-        }
-
-        .quick-btn {
-            border-radius: 8px;
-            border: 1px solid rgba(0,191,166,0.3);
-            background: rgba(0,191,166,0.1);
-            color: var(--primary);
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            font-size: clamp(10px, 1.2vh, 12px);
-            font-weight: 500;
-            padding: 6px 12px;
-            transition: var(--transition);
-            white-space: nowrap;
-        }
-        .quick-btn:hover {
-            background: var(--primary);
-            color: #fff;
-            box-shadow: 0 4px 15px rgba(0,191,166,0.3);
-            transform: translateY(-1px);
-        }
-
-        /* ════════════════════════════
-            CONTROL PANEL
-        ════════════════════════════ */
-        .ctrl-panel {
-            position: fixed;
-            top: 20px; right: 20px; bottom: 20px;
-            z-index: 1000;
-            width: clamp(280px, 24vw, 360px);
-            border-radius: var(--radius-lg);
-            display: flex; flex-direction: column;
-            overflow: hidden;
-            animation: slideRight .6s cubic-bezier(.175, .885, .32, 1.275) both;
-        }
-
-        .ctrl-inner {
-            flex: 1; display: flex; flex-direction: column;
-            padding: var(--pad); gap: var(--gap);
-            overflow: hidden; min-height: 0;
-        }
-
-        /* ── Panel header ── */
-        .panel-header {
-            background: rgba(255,255,255,0.02);
-            border-radius: var(--radius-md);
-            padding: clamp(10px, 1.2vh, 16px) clamp(12px, 1.5vw, 16px);
-            display: flex; align-items: center; gap: 12px;
-            flex-shrink: 0;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .panel-icon {
-            width: clamp(32px, 3.5vh, 40px);
-            height: clamp(32px, 3.5vh, 40px);
-            border-radius: 10px;
-            background: linear-gradient(135deg, rgba(0,191,166,0.2), rgba(108,92,231,0.2));
-            border: 1px solid rgba(255,255,255,0.1);
-            display: flex; align-items: center; justify-content: center;
-            color: #fff;
-            font-size: clamp(14px, 1.5vh, 18px);
-            flex-shrink: 0;
-        }
-
-        .panel-title {
-            font-size: clamp(10px, 1.1vh, 12px);
-            font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-
-        .panel-sub {
-            font-size: clamp(9px, 1vh, 11px);
-            color: var(--text-muted); font-weight: 300; margin-top: 2px;
-        }
-
-        .live-badge {
-            margin-left: auto; display: flex; align-items: center; gap: 6px;
-            font-size: clamp(9px, 1vh, 11px); color: var(--primary); font-weight: 600;
-            background: rgba(0,191,166,0.1); padding: 4px 10px; border-radius: 20px;
-            border: 1px solid rgba(0,191,166,0.2);
-        }
-        .live-dot {
-            width: 6px; height: 6px; border-radius: 50%; background: var(--primary);
-            animation: pulseDot 2s infinite;
-        }
-
-        /* ── Stats bar ── */
-        .stats-bar {
-            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: clamp(6px, .8vh, 10px); flex-shrink: 0;
-        }
-
-        .stat-item {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 12px;
-            padding: var(--stat-pad) 4px;
-            text-align: center;
-            transition: var(--transition);
-        }
-        .stat-item:hover {
-            background: rgba(255,255,255,0.05);
-            border-color: rgba(0,191,166,0.3);
-            transform: translateY(-2px);
-        }
-
-        .stat-value {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: clamp(12px, 1.4vh, 15px);
-            font-weight: 700; color: #fff; line-height: 1;
-        }
-
-        .stat-label {
-            font-size: clamp(9px, 1vh, 10px); font-weight: 500;
-            color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;
-        }
-
-        /* ── Sections ── */
-        .sections-wrap {
-            flex: 1; display: flex; flex-direction: column; gap: var(--gap); min-height: 0;
-            overflow-y: auto; /* Enable scrolling to prevent cramped inputs */
-            overflow-x: hidden;
-            padding-right: 4px; 
-        }
-
-        .section-block {
-            background: rgba(255,255,255,0.015);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: var(--radius-md);
-            padding: clamp(10px, 1.2vh, 16px);
-            display: flex; flex-direction: column; 
-            flex-shrink: 0; /* Prevents unequal spacing and scrunched rows */
-            transition: var(--transition);
-        }
-        .section-block:hover { border-color: rgba(255,255,255,0.12); }
-
-        .section-header {
-            display: flex; align-items: center; gap: 8px; margin-bottom: clamp(6px, 1vh, 12px); flex-shrink: 0;
-        }
-
-        .section-icon {
-            width: clamp(20px, 2.5vh, 26px); height: clamp(20px, 2.5vh, 26px);
-            border-radius: 6px; display: flex; align-items: center; justify-content: center;
-            font-size: clamp(10px, 1.2vh, 13px); flex-shrink: 0;
-        }
-        .si-teal { background: rgba(0,191,166,0.15); color: var(--primary); }
-        .si-purple { background: rgba(108,92,231,0.15); color: #a29bfe; }
-        .si-pink { background: rgba(253,121,168,0.15); color: var(--accent); }
-
-        .section-title-text {
-            font-size: var(--fs-section); font-weight: 600; letter-spacing: 1px;
-            text-transform: uppercase; color: var(--text-secondary);
-        }
-
-        /* ── Form rows ── */
-        .form-rows {
-            display: flex; flex-direction: column; gap: var(--row-py); /* Uses row gaps rather than stretching */
-        }
-        .form-row {
-            display: flex; align-items: center; justify-content: space-between; gap: 8px;
-            padding: 4px 0; border-top: 1px solid rgba(255,255,255,0.03);
-        }
-        .form-row:first-child { border-top: none; }
-
-        .form-label-custom {
-            font-size: var(--fs-label); font-weight: 400; color: var(--text-secondary);
-            flex: 1; display: flex; align-items: center; gap: 6px; white-space: nowrap;
-        }
-        .lbl-icon { font-size: clamp(10px, 1.1vh, 12px); color: var(--text-muted); }
-
-        /* ── Inputs ── */
-        .input-wrap { position: relative; display: flex; align-items: center; flex-shrink: 0; }
-
-        .neon-input {
-            width: var(--input-w) !important; height: var(--input-h) !important;
-            background: rgba(0,0,0,0.4) !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
-            color: #fff !important;
-            font-family: 'JetBrains Mono', monospace !important;
-            font-weight: 600 !important; font-size: var(--fs-input) !important;
-            border-radius: 8px !important; padding: 0 24px 0 8px !important;
-            transition: var(--transition) !important; text-align: center;
-        }
-        .neon-input:hover { border-color: rgba(255,255,255,0.25) !important; background: rgba(0,0,0,0.6) !important; }
-        .neon-input:focus {
-            border-color: var(--primary) !important; background: rgba(0,0,0,0.8) !important;
-            box-shadow: 0 0 0 3px rgba(0,191,166,0.15) !important; outline: none !important;
-        }
-
-        select.neon-input {
-            cursor: pointer; padding-right: 24px !important; appearance: auto; /* Fixed overlapping arrow issue */
-            font-family: 'Outfit', sans-serif !important; font-weight: 500 !important;
-            text-overflow: ellipsis;
-        }
-        select.neon-input option { background: #0c0c12; color: #fff; }
-
-        .input-unit {
-            position: absolute; right: 8px; font-size: clamp(9px, 1vh, 11px);
-            font-weight: 500; color: var(--text-muted); pointer-events: none;
-        }
-
-        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { opacity: 0; }
-
-        /* ── Action buttons ── */
-        .action-row { display: flex; gap: clamp(8px, 1vh, 12px); flex-shrink: 0; margin-top: 4px; }
-
-        .btn-reset {
-            flex: 0 0 auto; height: clamp(34px, 4vh, 40px); padding: 0 clamp(12px, 1.5vw, 18px);
-            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
-            color: var(--text-secondary); font-weight: 500; font-size: clamp(11px, 1.2vh, 13px);
-            border-radius: 10px; cursor: pointer; transition: var(--transition);
-            display: flex; align-items: center; gap: 6px; white-space: nowrap;
-        }
-        .btn-reset:hover {
-            background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.4); color: #ff6b6b;
-        }
-
-        .btn-update {
-            flex: 1; height: clamp(34px, 4vh, 40px);
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            border: none; color: white; font-weight: 600; font-size: clamp(11px, 1.2vh, 13px);
-            letter-spacing: 1px; text-transform: uppercase; border-radius: 10px;
-            cursor: pointer; transition: var(--transition); position: relative; overflow: hidden;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            box-shadow: 0 4px 15px rgba(0,191,166,0.3);
-        }
-        .btn-update:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,191,166,0.5); }
-        .btn-update:active { transform: translateY(0); }
-
-        .btn-shimmer {
-            position: absolute; top: -50%; left: -75%; width: 50%; height: 200%;
-            background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);
-            transform: skewX(-20deg); animation: shimmer 3s infinite;
-        }
-
-        /* ── Footer ── */
-        .panel-footer {
-            text-align: center; font-size: clamp(9px, 1vh, 11px); color: var(--text-muted);
-            flex-shrink: 0; padding-top: 4px; font-weight: 300;
-        }
-
-        /* ════════════════════════════
-            CANVAS INFO BAR
-        ════════════════════════════ */
-        .canvas-info {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            z-index: 1000; border-radius: 50px;
-            padding: clamp(8px, 1vh, 12px) clamp(18px, 2vw, 28px);
-            display: flex; align-items: center; gap: clamp(12px, 1.5vw, 24px);
-            animation: slideUp .6s cubic-bezier(.175, .885, .32, 1.275) both;
-            animation-delay: 0.2s;
-        }
-
-        .ci-item {
-            display: flex; align-items: center; gap: 8px;
-            font-size: clamp(11px, 1.2vh, 13px); font-weight: 400; color: var(--text-secondary); white-space: nowrap;
-        }
-        .ci-item i { font-size: clamp(12px, 1.3vh, 14px); color: var(--primary); }
-
-        .ci-sep { width: 1px; height: 14px; background: rgba(255,255,255,0.1); }
-
-        /* ════════════════════════════
-            ANIMATIONS
-        ════════════════════════════ */
-        @keyframes slideLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: none; } }
-        @keyframes slideRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: none; } }
-        @keyframes slideUp { from { opacity: 0; transform: translate(-50%, 30px); } to { opacity: 1; transform: translate(-50%, 0); } }
-        @keyframes pulseDot { 0%, 100% { box-shadow: 0 0 0 0 rgba(0, 191, 166, 0.4); } 50% { box-shadow: 0 0 0 6px rgba(0, 191, 166, 0); } }
-        @keyframes shimmer { 0% { left: -75%; } 100% { left: 150%; } }
-    </style>
-</head>
-
-<body>
-
-    <div class="bg-mesh"></div>
-    <div class="bg-grid"></div>
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-
-    <div class="glass profile-card">
-        <div class="avatar-ring">
-            <div class="avatar-inner">
-                <img src="./Image/me.jpg" alt="AD" onerror="this.src='https://ui-avatars.com/api/?name=Ashutosh+Dash&background=0a0a10&color=00BFA6&bold=true'">
-            </div>
-            <span class="status-dot"></span>
-        </div>
-
-        <div class="d-flex flex-column justify-content-center">
-            <span class="profile-name">Ashutosh Dash</span>
-            <span class="profile-badge">Configurator Developer</span>
-        </div>
-
-        <div class="profile-sep"></div>
-
-        <button class="quick-btn" title="CAD View" onclick="goToCAD()">
-            <i class="bi bi-box me-2"></i> CAD View
-        </button>
-    </div>
-
-    <div class="glass ctrl-panel">
-        <div class="ctrl-inner">
-
-            <div class="panel-header">
-                <div class="panel-icon"><i class="bi bi-sliders2"></i></div>
-                <div>
-                    <div class="panel-title">Design Controls</div>
-                    <div class="panel-sub">Window Configurator v2.0</div>
-                </div>
-                <div class="live-badge">
-                    <span class="live-dot"></span> LIVE
-                </div>
-            </div>
-
-            <div class="stats-bar">
-                <div class="stat-item">
-                    <div class="stat-value" id="stat-width">5000</div>
-                    <div class="stat-label">Width</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="stat-height">702</div>
-                    <div class="stat-label">Height</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="stat-ghh">350</div>
-                    <div class="stat-label">GHH</div>
-                </div>
-            </div>
-
-            <div class="sections-wrap">
-
-                <div class="section-block">
-                    <div class="section-header">
-                        <div class="section-icon si-teal"><i class="bi bi-bounding-box"></i></div>
-                        <span class="section-title-text">Frame Dimensions</span>
-                    </div>
-                    <div class="form-rows">
-                        <div class="form-row">
-                            <label class="form-label-custom" for="frame-width">
-                                <i class="bi bi-arrows-expand lbl-icon" style="transform:rotate(90deg);display:inline-block;"></i> Width
-                            </label>
-                            <div class="input-wrap">
-                                <input type="number" id="frame-width" class="neon-input" value="5000">
-                                <span class="input-unit">mm</span>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <label class="form-label-custom" for="frame-height">
-                                <i class="bi bi-arrows-expand lbl-icon"></i> Height
-                            </label>
-                            <div class="input-wrap">
-                                <input type="number" id="frame-height" class="neon-input" value="702">
-                                <span class="input-unit">mm</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="section-block">
-                    <div class="section-header">
-                        <div class="section-icon si-purple"><i class="bi bi-rulers"></i></div>
-                        <span class="section-title-text">Handle Metrics</span>
-                    </div>
-                    <div class="form-rows">
-                        <div class="form-row">
-                            <label class="form-label-custom" for="handle-width">
-                                <i class="bi bi-distribute-horizontal lbl-icon"></i>Width
-                            </label>
-                            <div class="input-wrap">
-                                <input type="number" id="handle-width" class="neon-input" value="40">
-                                <span class="input-unit">mm</span>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <label class="form-label-custom" for="handle-height">
-                                <i class="bi bi-distribute-vertical lbl-icon"></i>Height
-                            </label>
-                            <div class="input-wrap">
-                                <input type="number" id="handle-height" class="neon-input" value="150">
-                                <span class="input-unit">mm</span>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <label class="form-label-custom" for="backplate-depth">
-                                <i class="bi bi-arrow-bar-right lbl-icon"></i>Backplate
-                            </label>
-                            <div class="input-wrap">
-                                <input type="number" id="backplate-depth" class="neon-input" value="10">
-                                <span class="input-unit">mm</span>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <label class="form-label-custom" for="handle-depth">
-                                <i class="bi bi-layers lbl-icon"></i>Depth
-                            </label>
-                            <div class="input-wrap">
-                                <input type="number" id="handle-depth" class="neon-input" value="10">
-                                <span class="input-unit">mm</span>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <label class="form-label-custom" for="handle-ghh">
-                                <i class="bi bi-crosshair lbl-icon"></i>GHH
-                            </label>
-                            <div class="input-wrap">
-                                <input type="number" id="handle-ghh" class="neon-input" value="350">
-                                <span class="input-unit">mm</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="section-block">
-                    <div class="section-header">
-                        <div class="section-icon si-pink"><i class="bi bi-toggles"></i></div>
-                        <span class="section-title-text">Configuration</span>
-                    </div>
-                    <div class="form-rows">
-                        <div class="form-row">
-                            <label class="form-label-custom" for="handle-side">
-                                <i class="bi bi-layout-sidebar lbl-icon"></i>Mount Side
-                            </label>
-                            <div class="input-wrap">
-                                <select id="handle-side" class="neon-input">
-                                    <option value="right">Right</option>
-                                    <option value="left">Left</option>
-                                    <option value="top">Top</option>
-                                    <option value="bottom">Bottom</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <label class="form-label-custom" for="handle-orientation">
-                                <i class="bi bi-symmetry-horizontal lbl-icon"></i>Orientation
-                            </label>
-                            <div class="input-wrap">
-                                <select id="handle-orientation" class="neon-input">
-                                    <option value="left">Left Cockspur</option>
-                                    <option value="right">Right Cockspur</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <label class="form-label-custom" for="material-style">
-                                <i class="bi bi-eye lbl-icon"></i>View Type
-                            </label>
-                            <div class="input-wrap">
-                                <select id="material-style" class="neon-input">
-                                    <option value="normal">Normal</option>
-                                    <option value="realistic">Realistic</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <label class="form-label-custom" for="handle-placement">
-                                <i class="bi bi-front lbl-icon"></i>Handle Side
-                            </label>
-                            <div class="input-wrap">
-                                <select id="handle-placement" class="neon-input">
-                                    <option value="inside">Inside</option>
-                                    <option value="outside">Outside</option>
-                                    <option value="both">Both</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div><div class="action-row">
-                <button class="btn-reset" id="reset-btn">
-                    <i class="bi bi-arrow-counterclockwise"></i> Reset
-                </button>
-                <button class="btn-update" id="update-btn">
-                    <span class="btn-shimmer"></span>
-                    <i class="bi bi-play-fill" style="font-size: 16px;"></i> Update
-                </button>
-            </div>
-
-            <div class="panel-footer">
-                <i class="bi bi-shield-check me-1" style="color:var(--primary);"></i> Real-time preview · v2.0.0
-            </div>
-
-        </div></div>
-
-
-    <div class="glass canvas-info">
-        <div class="ci-item"><i class="bi bi-grid-3x3"></i><span>Canvas Active</span></div>
-        <div class="ci-sep"></div>
-        <div class="ci-item"><i class="bi bi-cursor"></i><span id="mouse-pos">0, 0</span></div>
-        <div class="ci-sep"></div>
-        <div class="ci-item"><i class="bi bi-zoom-in"></i><span>Scroll to zoom</span></div>
-        <div class="ci-sep"></div>
-        <div class="ci-item">
-            <i class="bi bi-info-circle" style="color:var(--secondary);"></i>
-            <span style="color:var(--secondary);">Left click to rotate, right click to pan</span>
-        </div>
-    </div>
-
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // ── Live stats sync ──
-        const syncStats = () => {
-            const ids = { 'frame-width': 'stat-width', 'frame-height': 'stat-height', 'handle-ghh': 'stat-ghh' };
-            Object.entries(ids).forEach(([src, tgt]) => {
-                const el = document.getElementById(src);
-                const out = document.getElementById(tgt);
-                if (el && out) out.textContent = el.value;
-            });
-        };
-        ['frame-width', 'frame-height', 'handle-ghh'].forEach(id => {
-            document.getElementById(id)?.addEventListener('input', syncStats);
-        });
-
-        // ── Mouse tracker ──
-        document.addEventListener('mousemove', e => {
-            const el = document.getElementById('mouse-pos');
-            if (el) el.textContent = `${e.clientX}, ${e.clientY}`;
-        });
-
-        // ── Reset defaults ──
-        const DEFAULTS = {
-            'frame-width': 500, 'frame-height': 700,
-            'handle-width': 40, 'handle-height': 150,
-            'backplate-depth': 10, 'handle-depth': 10, 'handle-ghh': 350,
-            'handle-side': 'right', 'handle-orientation': 'left',
-            'material-style': 'normal', 'handle-placement': 'inside'
-        };
-        
-        document.getElementById('reset-btn')?.addEventListener('click', () => {
-            Object.entries(DEFAULTS).forEach(([id, val]) => {
-                const el = document.getElementById(id);
-                if (el) el.value = val;
-            });
-            syncStats();
-        });
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedConfigStr = localStorage.getItem('cadConfig');
-            if (savedConfigStr) {
-                try {
-                    const config = JSON.parse(savedConfigStr);
-                    const mapping = {
-                        frameWidth: 'frame-width',
-                        frameHeight: 'frame-height',
-                        handleWidth: 'handle-width',
-                        handleHeight: 'handle-height',
-                        ghh: 'handle-ghh',
-                        mountSide: 'handle-side',
-                        orientation: 'handle-orientation',
-                        backplateDepth: 'backplate-depth',
-                        handleDepth: 'handle-depth',
-                        viewType: 'material-style',
-                        handlePlacement: 'handle-placement'
-                    };
-                    Object.entries(mapping).forEach(([configKey, elementId]) => {
-                        const el = document.getElementById(elementId);
-                        if (el && config[configKey] !== undefined) {
-                            el.value = config[configKey];
-                        }
-                    });
-                    syncStats();
-                    document.getElementById('update-btn')?.click();
-                } catch (e) {
-                    console.warn('Failed to restore config:', e);
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Window Configurator</title>
+
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+            rel="stylesheet"
+        />
+
+        <style>
+            :root {
+                --primary: #00bfa6;
+                --primary-light: #33ffd5;
+                --primary-dark: #008775;
+                --secondary: #6c5ce7;
+                --accent: #fd79a8;
+                --bg-main: #060608;
+                --text-primary: #ffffff;
+                --text-secondary: rgba(255, 255, 255, 0.75);
+                --text-muted: rgba(255, 255, 255, 0.45);
+                --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.5);
+                --radius-sm: 8px;
+                --radius-md: 14px;
+                --radius-lg: 20px;
+                --transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+                /* Dynamic spacing */
+                --gap: clamp(6px, 1vh, 12px);
+                --pad: clamp(12px, 1.5vh, 20px);
+                --row-py: clamp(4px, 0.8vh, 8px);
+                --fs-label: clamp(10px, 1.1vh, 12px);
+                --fs-input: clamp(11px, 1.2vh, 13px);
+                --fs-section: clamp(9px, 1vh, 11px);
+                --input-h: clamp(28px, 3.5vh, 36px);
+                /* Increased input width to prevent longer text (like "Left Cockspur") from cutting off */
+                --input-w: clamp(110px, 12vw, 135px);
+                --stat-pad: clamp(6px, 0.9vh, 10px);
+            }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            /* ── Scrollbar ── */
+            ::-webkit-scrollbar {
+                width: 4px;
+            }
+            ::-webkit-scrollbar-track {
+                background: rgba(255, 255, 255, 0.02);
+                border-radius: 10px;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: rgba(0, 191, 166, 0.5);
+                border-radius: 10px;
+            }
+
+            body {
+                overflow: hidden;
+                background: var(--bg-main);
+                font-family: 'Outfit', sans-serif;
+                color: var(--text-primary);
+                height: 100vh;
+                width: 100vw;
+            }
+
+            /* ── Mesh Background & Orbs (from previous design) ── */
+            .bg-mesh {
+                position: fixed;
+                inset: 0;
+                z-index: -2;
+                background:
+                    radial-gradient(
+                        ellipse 80% 60% at 20% 10%,
+                        rgba(108, 92, 231, 0.12) 0%,
+                        transparent 60%
+                    ),
+                    radial-gradient(
+                        ellipse 60% 50% at 80% 80%,
+                        rgba(0, 191, 166, 0.1) 0%,
+                        transparent 60%
+                    ),
+                    #060608;
+            }
+            .bg-grid {
+                position: fixed;
+                inset: 0;
+                z-index: -1;
+                background-image:
+                    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+                background-size: 40px 40px;
+                mask-image: radial-gradient(
+                    ellipse 100% 100% at 50% 50%,
+                    black 20%,
+                    transparent 100%
+                );
+            }
+            .orb {
+                position: fixed;
+                border-radius: 50%;
+                filter: blur(80px);
+                pointer-events: none;
+                z-index: -1;
+                animation: orb-drift 20s ease-in-out infinite alternate;
+            }
+            .orb-1 {
+                width: 400px;
+                height: 400px;
+                background: rgba(108, 92, 231, 0.15);
+                top: -100px;
+                left: -100px;
+                animation-duration: 25s;
+            }
+            .orb-2 {
+                width: 300px;
+                height: 300px;
+                background: rgba(0, 191, 166, 0.15);
+                bottom: -50px;
+                right: -50px;
+                animation-duration: 18s;
+                animation-delay: -8s;
+            }
+
+            @keyframes orb-drift {
+                0% {
+                    transform: translate(0, 0) scale(1);
+                }
+                100% {
+                    transform: translate(30px, 40px) scale(1.1);
                 }
             }
-        });
 
-        function goToCAD() {
-            const config = {
-                frameWidth: document.getElementById('frame-width').value,
-                frameHeight: document.getElementById('frame-height').value,
-                handleWidth: document.getElementById('handle-width').value,
-                handleHeight: document.getElementById('handle-height').value,
-                ghh: document.getElementById('handle-ghh').value,
-                mountSide: document.getElementById('handle-side').value,
-                orientation: document.getElementById('handle-orientation').value,
-                backplateDepth: document.getElementById('backplate-depth').value,
-                handleDepth: document.getElementById('handle-depth').value,
-                viewType: document.getElementById('material-style').value,
-                handlePlacement: document.getElementById('handle-placement').value
+            /* ── Glass ── */
+            .glass {
+                background: rgba(12, 12, 18, 0.65);
+                backdrop-filter: blur(24px) saturate(180%);
+                -webkit-backdrop-filter: blur(24px) saturate(180%);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                box-shadow:
+                    var(--shadow-lg),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            }
+
+            /* ════════════════════════════
+            PROFILE CARD
+        ════════════════════════════ */
+            .profile-card {
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 1000;
+                border-radius: 50px;
+                padding: clamp(6px, 1vh, 10px) clamp(16px, 1.5vw, 20px) clamp(6px, 1vh, 10px)
+                    clamp(8px, 1vh, 12px);
+                display: flex;
+                align-items: center;
+                gap: clamp(10px, 1.2vw, 16px);
+                animation: slideLeft 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+                transition: border-color 0.3s ease;
+            }
+            .profile-card:hover {
+                border-color: rgba(0, 191, 166, 0.3);
+                box-shadow:
+                    var(--shadow-lg),
+                    0 0 20px rgba(0, 191, 166, 0.1);
+            }
+
+            .avatar-ring {
+                background: linear-gradient(135deg, var(--primary), var(--secondary));
+                padding: 2.5px;
+                border-radius: 50%;
+                flex-shrink: 0;
+                position: relative;
+            }
+
+            .avatar-inner {
+                background: #0a0a10;
+                border-radius: 50%;
+                width: clamp(38px, 4.5vh, 46px);
+                height: clamp(38px, 4.5vh, 46px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+            }
+
+            .avatar-inner img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: 50%;
+            }
+
+            .status-dot {
+                width: 10px;
+                height: 10px;
+                background: #00bfa6;
+                border-radius: 50%;
+                border: 2px solid #060608;
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                animation: pulseDot 2s infinite;
+            }
+
+            .profile-name {
+                font-size: clamp(12px, 1.4vh, 14px);
+                font-weight: 600;
+                color: var(--text-primary);
+                line-height: 1.1;
+                white-space: nowrap;
+            }
+
+            .profile-badge {
+                font-size: clamp(9px, 1vh, 10px);
+                font-weight: 400;
+                color: var(--text-muted);
+                white-space: nowrap;
+            }
+
+            .profile-sep {
+                width: 1px;
+                height: 28px;
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .quick-btn {
+                border-radius: 8px;
+                border: 1px solid rgba(0, 191, 166, 0.3);
+                background: rgba(0, 191, 166, 0.1);
+                color: var(--primary);
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: clamp(10px, 1.2vh, 12px);
+                font-weight: 500;
+                padding: 6px 12px;
+                transition: var(--transition);
+                white-space: nowrap;
+            }
+            .quick-btn:hover {
+                background: var(--primary);
+                color: #fff;
+                box-shadow: 0 4px 15px rgba(0, 191, 166, 0.3);
+                transform: translateY(-1px);
+            }
+
+            /* ════════════════════════════
+            CONTROL PANEL
+        ════════════════════════════ */
+            .ctrl-panel {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                bottom: 20px;
+                z-index: 1000;
+                width: clamp(280px, 24vw, 360px);
+                border-radius: var(--radius-lg);
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                animation: slideRight 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+            }
+
+            .ctrl-inner {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                padding: var(--pad);
+                gap: var(--gap);
+                overflow: hidden;
+                min-height: 0;
+            }
+
+            /* ── Panel header ── */
+            .panel-header {
+                background: rgba(255, 255, 255, 0.02);
+                border-radius: var(--radius-md);
+                padding: clamp(10px, 1.2vh, 16px) clamp(12px, 1.5vw, 16px);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                flex-shrink: 0;
+                border: 1px solid rgba(255, 255, 255, 0.05);
+            }
+
+            .panel-icon {
+                width: clamp(32px, 3.5vh, 40px);
+                height: clamp(32px, 3.5vh, 40px);
+                border-radius: 10px;
+                background: linear-gradient(
+                    135deg,
+                    rgba(0, 191, 166, 0.2),
+                    rgba(108, 92, 231, 0.2)
+                );
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #fff;
+                font-size: clamp(14px, 1.5vh, 18px);
+                flex-shrink: 0;
+            }
+
+            .panel-title {
+                font-size: clamp(10px, 1.1vh, 12px);
+                font-weight: 700;
+                letter-spacing: 1.5px;
+                text-transform: uppercase;
+                background: linear-gradient(135deg, var(--primary), var(--secondary));
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+            .panel-sub {
+                font-size: clamp(9px, 1vh, 11px);
+                color: var(--text-muted);
+                font-weight: 300;
+                margin-top: 2px;
+            }
+
+            .live-badge {
+                margin-left: auto;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: clamp(9px, 1vh, 11px);
+                color: var(--primary);
+                font-weight: 600;
+                background: rgba(0, 191, 166, 0.1);
+                padding: 4px 10px;
+                border-radius: 20px;
+                border: 1px solid rgba(0, 191, 166, 0.2);
+            }
+            .live-dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: var(--primary);
+                animation: pulseDot 2s infinite;
+            }
+
+            /* ── Stats bar ── */
+            .stats-bar {
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: clamp(6px, 0.8vh, 10px);
+                flex-shrink: 0;
+            }
+
+            .stat-item {
+                background: rgba(255, 255, 255, 0.02);
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                border-radius: 12px;
+                padding: var(--stat-pad) 4px;
+                text-align: center;
+                transition: var(--transition);
+            }
+            .stat-item:hover {
+                background: rgba(255, 255, 255, 0.05);
+                border-color: rgba(0, 191, 166, 0.3);
+                transform: translateY(-2px);
+            }
+
+            .stat-value {
+                font-family: 'JetBrains Mono', monospace;
+                font-size: clamp(12px, 1.4vh, 15px);
+                font-weight: 700;
+                color: #fff;
+                line-height: 1;
+            }
+
+            .stat-label {
+                font-size: clamp(9px, 1vh, 10px);
+                font-weight: 500;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-top: 4px;
+            }
+
+            /* ── Sections ── */
+            .sections-wrap {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: var(--gap);
+                min-height: 0;
+                overflow-y: auto; /* Enable scrolling to prevent cramped inputs */
+                overflow-x: hidden;
+                padding-right: 4px;
+            }
+
+            .section-block {
+                background: rgba(255, 255, 255, 0.015);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: var(--radius-md);
+                padding: clamp(10px, 1.2vh, 16px);
+                display: flex;
+                flex-direction: column;
+                flex-shrink: 0; /* Prevents unequal spacing and scrunched rows */
+                transition: var(--transition);
+            }
+            .section-block:hover {
+                border-color: rgba(255, 255, 255, 0.12);
+            }
+
+            .section-header {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: clamp(6px, 1vh, 12px);
+                flex-shrink: 0;
+            }
+
+            .section-icon {
+                width: clamp(20px, 2.5vh, 26px);
+                height: clamp(20px, 2.5vh, 26px);
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: clamp(10px, 1.2vh, 13px);
+                flex-shrink: 0;
+            }
+            .si-teal {
+                background: rgba(0, 191, 166, 0.15);
+                color: var(--primary);
+            }
+            .si-purple {
+                background: rgba(108, 92, 231, 0.15);
+                color: #a29bfe;
+            }
+            .si-pink {
+                background: rgba(253, 121, 168, 0.15);
+                color: var(--accent);
+            }
+
+            .section-title-text {
+                font-size: var(--fs-section);
+                font-weight: 600;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                color: var(--text-secondary);
+            }
+
+            /* ── Form rows ── */
+            .form-rows {
+                display: flex;
+                flex-direction: column;
+                gap: var(--row-py); /* Uses row gaps rather than stretching */
+            }
+            .form-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+                padding: 4px 0;
+                border-top: 1px solid rgba(255, 255, 255, 0.03);
+            }
+            .form-row:first-child {
+                border-top: none;
+            }
+
+            .form-label-custom {
+                font-size: var(--fs-label);
+                font-weight: 400;
+                color: var(--text-secondary);
+                flex: 1;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                white-space: nowrap;
+            }
+            .lbl-icon {
+                font-size: clamp(10px, 1.1vh, 12px);
+                color: var(--text-muted);
+            }
+
+            /* ── Inputs ── */
+            .input-wrap {
+                position: relative;
+                display: flex;
+                align-items: center;
+                flex-shrink: 0;
+            }
+
+            .neon-input {
+                width: var(--input-w) !important;
+                height: var(--input-h) !important;
+                background: rgba(0, 0, 0, 0.4) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                color: #fff !important;
+                font-family: 'JetBrains Mono', monospace !important;
+                font-weight: 600 !important;
+                font-size: var(--fs-input) !important;
+                border-radius: 8px !important;
+                padding: 0 24px 0 8px !important;
+                transition: var(--transition) !important;
+                text-align: center;
+            }
+            .neon-input:hover {
+                border-color: rgba(255, 255, 255, 0.25) !important;
+                background: rgba(0, 0, 0, 0.6) !important;
+            }
+            .neon-input:focus {
+                border-color: var(--primary) !important;
+                background: rgba(0, 0, 0, 0.8) !important;
+                box-shadow: 0 0 0 3px rgba(0, 191, 166, 0.15) !important;
+                outline: none !important;
+            }
+
+            select.neon-input {
+                cursor: pointer;
+                padding-right: 24px !important;
+                appearance: auto; /* Fixed overlapping arrow issue */
+                font-family: 'Outfit', sans-serif !important;
+                font-weight: 500 !important;
+                text-overflow: ellipsis;
+            }
+            select.neon-input option {
+                background: #0c0c12;
+                color: #fff;
+            }
+
+            .input-unit {
+                position: absolute;
+                right: 8px;
+                font-size: clamp(9px, 1vh, 11px);
+                font-weight: 500;
+                color: var(--text-muted);
+                pointer-events: none;
+            }
+
+            input[type='number']::-webkit-inner-spin-button,
+            input[type='number']::-webkit-outer-spin-button {
+                opacity: 0;
+            }
+
+            /* ── Action buttons ── */
+            .action-row {
+                display: flex;
+                gap: clamp(8px, 1vh, 12px);
+                flex-shrink: 0;
+                margin-top: 4px;
+            }
+
+            .btn-reset {
+                flex: 0 0 auto;
+                height: clamp(34px, 4vh, 40px);
+                padding: 0 clamp(12px, 1.5vw, 18px);
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                color: var(--text-secondary);
+                font-weight: 500;
+                font-size: clamp(11px, 1.2vh, 13px);
+                border-radius: 10px;
+                cursor: pointer;
+                transition: var(--transition);
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                white-space: nowrap;
+            }
+            .btn-reset:hover {
+                background: rgba(239, 68, 68, 0.1);
+                border-color: rgba(239, 68, 68, 0.4);
+                color: #ff6b6b;
+            }
+
+            .btn-update {
+                flex: 1;
+                height: clamp(34px, 4vh, 40px);
+                background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+                border: none;
+                color: white;
+                font-weight: 600;
+                font-size: clamp(11px, 1.2vh, 13px);
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                border-radius: 10px;
+                cursor: pointer;
+                transition: var(--transition);
+                position: relative;
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                box-shadow: 0 4px 15px rgba(0, 191, 166, 0.3);
+            }
+            .btn-update:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(0, 191, 166, 0.5);
+            }
+            .btn-update:active {
+                transform: translateY(0);
+            }
+
+            .btn-shimmer {
+                position: absolute;
+                top: -50%;
+                left: -75%;
+                width: 50%;
+                height: 200%;
+                background: linear-gradient(
+                    to right,
+                    transparent,
+                    rgba(255, 255, 255, 0.3),
+                    transparent
+                );
+                transform: skewX(-20deg);
+                animation: shimmer 3s infinite;
+            }
+
+            /* ── Footer ── */
+            .panel-footer {
+                text-align: center;
+                font-size: clamp(9px, 1vh, 11px);
+                color: var(--text-muted);
+                flex-shrink: 0;
+                padding-top: 4px;
+                font-weight: 300;
+            }
+
+            /* ════════════════════════════
+            CANVAS INFO BAR
+        ════════════════════════════ */
+            .canvas-info {
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 1000;
+                border-radius: 50px;
+                padding: clamp(8px, 1vh, 12px) clamp(18px, 2vw, 28px);
+                display: flex;
+                align-items: center;
+                gap: clamp(12px, 1.5vw, 24px);
+                animation: slideUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+                animation-delay: 0.2s;
+            }
+
+            .ci-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: clamp(11px, 1.2vh, 13px);
+                font-weight: 400;
+                color: var(--text-secondary);
+                white-space: nowrap;
+            }
+            .ci-item i {
+                font-size: clamp(12px, 1.3vh, 14px);
+                color: var(--primary);
+            }
+
+            .ci-sep {
+                width: 1px;
+                height: 14px;
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            /* ════════════════════════════
+            ANIMATIONS
+        ════════════════════════════ */
+            @keyframes slideLeft {
+                from {
+                    opacity: 0;
+                    transform: translateX(-30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: none;
+                }
+            }
+            @keyframes slideRight {
+                from {
+                    opacity: 0;
+                    transform: translateX(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: none;
+                }
+            }
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translate(-50%, 30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translate(-50%, 0);
+                }
+            }
+            @keyframes pulseDot {
+                0%,
+                100% {
+                    box-shadow: 0 0 0 0 rgba(0, 191, 166, 0.4);
+                }
+                50% {
+                    box-shadow: 0 0 0 6px rgba(0, 191, 166, 0);
+                }
+            }
+            @keyframes shimmer {
+                0% {
+                    left: -75%;
+                }
+                100% {
+                    left: 150%;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="bg-mesh"></div>
+        <div class="bg-grid"></div>
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+
+        <div class="glass profile-card">
+            <div class="avatar-ring">
+                <div class="avatar-inner">
+                    <img
+                        src="./Image/me.jpg"
+                        alt="AD"
+                        onerror="
+                            this.src =
+                                'https://ui-avatars.com/api/?name=Ashutosh+Dash&background=0a0a10&color=00BFA6&bold=true'
+                        "
+                    />
+                </div>
+                <span class="status-dot"></span>
+            </div>
+
+            <div class="d-flex flex-column justify-content-center">
+                <span class="profile-name">Ashutosh Dash</span>
+                <span class="profile-badge">Configurator Developer</span>
+            </div>
+
+            <div class="profile-sep"></div>
+
+            <button class="quick-btn" title="CAD View" onclick="goToCAD()">
+                <i class="bi bi-box me-2"></i> CAD View
+            </button>
+        </div>
+
+        <div class="glass ctrl-panel">
+            <div class="ctrl-inner">
+                <div class="panel-header">
+                    <div class="panel-icon"><i class="bi bi-sliders2"></i></div>
+                    <div>
+                        <div class="panel-title">Design Controls</div>
+                        <div class="panel-sub">Window Configurator v2.0</div>
+                    </div>
+                    <div class="live-badge"><span class="live-dot"></span> LIVE</div>
+                </div>
+
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-width">5000</div>
+                        <div class="stat-label">Width</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-height">702</div>
+                        <div class="stat-label">Height</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-ghh">350</div>
+                        <div class="stat-label">GHH</div>
+                    </div>
+                </div>
+
+                <div class="sections-wrap">
+                    <div class="section-block">
+                        <div class="section-header">
+                            <div class="section-icon si-teal">
+                                <i class="bi bi-bounding-box"></i>
+                            </div>
+                            <span class="section-title-text">Frame Dimensions</span>
+                        </div>
+                        <div class="form-rows">
+                            <div class="form-row">
+                                <label class="form-label-custom" for="frame-width">
+                                    <i
+                                        class="bi bi-arrows-expand lbl-icon"
+                                        style="transform: rotate(90deg); display: inline-block"
+                                    ></i>
+                                    Width
+                                </label>
+                                <div class="input-wrap">
+                                    <input
+                                        type="number"
+                                        id="frame-width"
+                                        class="neon-input"
+                                        value="5000"
+                                    />
+                                    <span class="input-unit">mm</span>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label class="form-label-custom" for="frame-height">
+                                    <i class="bi bi-arrows-expand lbl-icon"></i> Height
+                                </label>
+                                <div class="input-wrap">
+                                    <input
+                                        type="number"
+                                        id="frame-height"
+                                        class="neon-input"
+                                        value="702"
+                                    />
+                                    <span class="input-unit">mm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-block">
+                        <div class="section-header">
+                            <div class="section-icon si-purple"><i class="bi bi-rulers"></i></div>
+                            <span class="section-title-text">Handle Metrics</span>
+                        </div>
+                        <div class="form-rows">
+                            <div class="form-row">
+                                <label class="form-label-custom" for="handle-width">
+                                    <i class="bi bi-distribute-horizontal lbl-icon"></i>Width
+                                </label>
+                                <div class="input-wrap">
+                                    <input
+                                        type="number"
+                                        id="handle-width"
+                                        class="neon-input"
+                                        value="40"
+                                    />
+                                    <span class="input-unit">mm</span>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label class="form-label-custom" for="handle-height">
+                                    <i class="bi bi-distribute-vertical lbl-icon"></i>Height
+                                </label>
+                                <div class="input-wrap">
+                                    <input
+                                        type="number"
+                                        id="handle-height"
+                                        class="neon-input"
+                                        value="150"
+                                    />
+                                    <span class="input-unit">mm</span>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label class="form-label-custom" for="backplate-depth">
+                                    <i class="bi bi-arrow-bar-right lbl-icon"></i>Backplate
+                                </label>
+                                <div class="input-wrap">
+                                    <input
+                                        type="number"
+                                        id="backplate-depth"
+                                        class="neon-input"
+                                        value="10"
+                                    />
+                                    <span class="input-unit">mm</span>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label class="form-label-custom" for="handle-depth">
+                                    <i class="bi bi-layers lbl-icon"></i>Depth
+                                </label>
+                                <div class="input-wrap">
+                                    <input
+                                        type="number"
+                                        id="handle-depth"
+                                        class="neon-input"
+                                        value="10"
+                                    />
+                                    <span class="input-unit">mm</span>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label class="form-label-custom" for="handle-ghh">
+                                    <i class="bi bi-crosshair lbl-icon"></i>GHH
+                                </label>
+                                <div class="input-wrap">
+                                    <input
+                                        type="number"
+                                        id="handle-ghh"
+                                        class="neon-input"
+                                        value="350"
+                                    />
+                                    <span class="input-unit">mm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-block">
+                        <div class="section-header">
+                            <div class="section-icon si-pink"><i class="bi bi-toggles"></i></div>
+                            <span class="section-title-text">Configuration</span>
+                        </div>
+                        <div class="form-rows">
+                            <div class="form-row">
+                                <label class="form-label-custom" for="handle-side">
+                                    <i class="bi bi-layout-sidebar lbl-icon"></i>Mount Side
+                                </label>
+                                <div class="input-wrap">
+                                    <select id="handle-side" class="neon-input">
+                                        <option value="right">Right</option>
+                                        <option value="left">Left</option>
+                                        <option value="top">Top</option>
+                                        <option value="bottom">Bottom</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label class="form-label-custom" for="handle-orientation">
+                                    <i class="bi bi-symmetry-horizontal lbl-icon"></i>Orientation
+                                </label>
+                                <div class="input-wrap">
+                                    <select id="handle-orientation" class="neon-input">
+                                        <option value="left">Left Cockspur</option>
+                                        <option value="right">Right Cockspur</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label class="form-label-custom" for="material-style">
+                                    <i class="bi bi-eye lbl-icon"></i>View Type
+                                </label>
+                                <div class="input-wrap">
+                                    <select id="material-style" class="neon-input">
+                                        <option value="normal">Normal</option>
+                                        <option value="realistic">Realistic</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label class="form-label-custom" for="handle-placement">
+                                    <i class="bi bi-front lbl-icon"></i>Handle Side
+                                </label>
+                                <div class="input-wrap">
+                                    <select id="handle-placement" class="neon-input">
+                                        <option value="inside">Inside</option>
+                                        <option value="outside">Outside</option>
+                                        <option value="both">Both</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="action-row">
+                    <button class="btn-reset" id="reset-btn">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </button>
+                    <button class="btn-update" id="update-btn">
+                        <span class="btn-shimmer"></span>
+                        <i class="bi bi-play-fill" style="font-size: 16px"></i> Update
+                    </button>
+                </div>
+
+                <div class="panel-footer">
+                    <i class="bi bi-shield-check me-1" style="color: var(--primary)"></i> Real-time
+                    preview · v2.0.0
+                </div>
+            </div>
+        </div>
+
+        <div class="glass canvas-info">
+            <div class="ci-item"><i class="bi bi-grid-3x3"></i><span>Canvas Active</span></div>
+            <div class="ci-sep"></div>
+            <div class="ci-item"><i class="bi bi-cursor"></i><span id="mouse-pos">0, 0</span></div>
+            <div class="ci-sep"></div>
+            <div class="ci-item"><i class="bi bi-zoom-in"></i><span>Scroll to zoom</span></div>
+            <div class="ci-sep"></div>
+            <div class="ci-item">
+                <i class="bi bi-info-circle" style="color: var(--secondary)"></i>
+                <span style="color: var(--secondary)"
+                    >Left click to rotate, right click to pan</span
+                >
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // ── Live stats sync ──
+            const syncStats = () => {
+                const ids = {
+                    'frame-width': 'stat-width',
+                    'frame-height': 'stat-height',
+                    'handle-ghh': 'stat-ghh',
+                };
+                Object.entries(ids).forEach(([src, tgt]) => {
+                    const el = document.getElementById(src);
+                    const out = document.getElementById(tgt);
+                    if (el && out) out.textContent = el.value;
+                });
+            };
+            ['frame-width', 'frame-height', 'handle-ghh'].forEach((id) => {
+                document.getElementById(id)?.addEventListener('input', syncStats);
+            });
+
+            // ── Mouse tracker ──
+            document.addEventListener('mousemove', (e) => {
+                const el = document.getElementById('mouse-pos');
+                if (el) el.textContent = `${e.clientX}, ${e.clientY}`;
+            });
+
+            // ── Reset defaults ──
+            const DEFAULTS = {
+                'frame-width': 500,
+                'frame-height': 700,
+                'handle-width': 40,
+                'handle-height': 150,
+                'backplate-depth': 10,
+                'handle-depth': 10,
+                'handle-ghh': 350,
+                'handle-side': 'right',
+                'handle-orientation': 'left',
+                'material-style': 'normal',
+                'handle-placement': 'inside',
             };
 
-            localStorage.setItem('cadConfig', JSON.stringify(config));
-            window.location.href = './cad/index1.html';
-        }
-    </script>
+            document.getElementById('reset-btn')?.addEventListener('click', () => {
+                Object.entries(DEFAULTS).forEach(([id, val]) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = val;
+                });
+                syncStats();
+            });
 
-    <script type="module" src="./src/main.js"></script>
-    <script type="module" src="./src/ui/controls.js"></script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const savedConfigStr = localStorage.getItem('cadConfig');
+                if (savedConfigStr) {
+                    try {
+                        const config = JSON.parse(savedConfigStr);
+                        const mapping = {
+                            frameWidth: 'frame-width',
+                            frameHeight: 'frame-height',
+                            handleWidth: 'handle-width',
+                            handleHeight: 'handle-height',
+                            ghh: 'handle-ghh',
+                            mountSide: 'handle-side',
+                            orientation: 'handle-orientation',
+                            backplateDepth: 'backplate-depth',
+                            handleDepth: 'handle-depth',
+                            viewType: 'material-style',
+                            handlePlacement: 'handle-placement',
+                        };
+                        Object.entries(mapping).forEach(([configKey, elementId]) => {
+                            const el = document.getElementById(elementId);
+                            if (el && config[configKey] !== undefined) {
+                                el.value = config[configKey];
+                            }
+                        });
+                        syncStats();
+                        document.getElementById('update-btn')?.click();
+                    } catch (e) {
+                        console.warn('Failed to restore config:', e);
+                    }
+                }
+            });
 
-</body>
+            function goToCAD() {
+                const config = {
+                    frameWidth: document.getElementById('frame-width').value,
+                    frameHeight: document.getElementById('frame-height').value,
+                    handleWidth: document.getElementById('handle-width').value,
+                    handleHeight: document.getElementById('handle-height').value,
+                    ghh: document.getElementById('handle-ghh').value,
+                    mountSide: document.getElementById('handle-side').value,
+                    orientation: document.getElementById('handle-orientation').value,
+                    backplateDepth: document.getElementById('backplate-depth').value,
+                    handleDepth: document.getElementById('handle-depth').value,
+                    viewType: document.getElementById('material-style').value,
+                    handlePlacement: document.getElementById('handle-placement').value,
+                };
+
+                localStorage.setItem('cadConfig', JSON.stringify(config));
+                window.location.href = './cad/index1.html';
+            }
+        </script>
+
+        <script type="module" src="./src/main.js"></script>
+        <script type="module" src="./src/ui/controls.js"></script>
+    </body>
 </html>

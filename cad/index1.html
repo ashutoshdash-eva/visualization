@@ -1,131 +1,177 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>CAD View</title>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAD View</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+            rel="stylesheet"
+        />
 
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+        <style>
+            :root {
+                --primary: #00bfa6;
+                --secondary: #6c5ce7;
+                --bg-main: #060608;
+                --text-primary: #ffffff;
+                --transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
 
-    <style>
-        :root {
-            --primary: #00BFA6;
-            --secondary: #6C5CE7;
-            --bg-main: #060608;
-            --text-primary: #ffffff;
-            --transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+            body {
+                overflow: hidden;
+                background: var(--bg-main);
+                font-family: 'Outfit', sans-serif;
+                color: var(--text-primary);
+                height: 100vh;
+                width: 100vw;
+            }
 
-        body {
-            overflow: hidden;
-            background: var(--bg-main);
-            font-family: 'Outfit', sans-serif;
-            color: var(--text-primary);
-            height: 100vh;
-            width: 100vw;
-        }
+            /* ── Theme Background ── */
+            .bg-mesh {
+                position: fixed;
+                inset: 0;
+                z-index: -2;
+                background:
+                    radial-gradient(
+                        ellipse 80% 60% at 20% 10%,
+                        rgba(108, 92, 231, 0.12) 0%,
+                        transparent 60%
+                    ),
+                    radial-gradient(
+                        ellipse 60% 50% at 80% 80%,
+                        rgba(0, 191, 166, 0.1) 0%,
+                        transparent 60%
+                    ),
+                    #060608;
+            }
 
-        /* ── Theme Background ── */
-        .bg-mesh {
-            position: fixed; inset: 0; z-index: -2;
-            background:
-                radial-gradient(ellipse 80% 60% at 20% 10%, rgba(108,92,231,0.12) 0%, transparent 60%),
-                radial-gradient(ellipse 60% 50% at 80% 80%, rgba(0,191,166,0.10) 0%, transparent 60%),
-                #060608;
-        }
-        
-        .bg-grid {
-            position: fixed; inset: 0; z-index: -1;
-            background-image:
-                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-            background-size: 40px 40px;
-            mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, black 20%, transparent 100%);
-        }
+            .bg-grid {
+                position: fixed;
+                inset: 0;
+                z-index: -1;
+                background-image:
+                    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+                background-size: 40px 40px;
+                mask-image: radial-gradient(
+                    ellipse 100% 100% at 50% 50%,
+                    black 20%,
+                    transparent 100%
+                );
+            }
 
-        .orb {
-            position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: -1;
-            animation: orb-drift 20s ease-in-out infinite alternate;
-        }
-        
-        .orb-1 { width: 400px; height: 400px; background: rgba(108,92,231,0.15); top: -100px; left: -100px; animation-duration: 25s; }
-        .orb-2 { width: 300px; height: 300px; background: rgba(0,191,166,0.15); bottom: -50px; right: -50px; animation-duration: 18s; animation-delay: -8s; }
+            .orb {
+                position: fixed;
+                border-radius: 50%;
+                filter: blur(80px);
+                pointer-events: none;
+                z-index: -1;
+                animation: orb-drift 20s ease-in-out infinite alternate;
+            }
 
-        @keyframes orb-drift {
-            0%   { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(30px, 40px) scale(1.1); }
-        }
+            .orb-1 {
+                width: 400px;
+                height: 400px;
+                background: rgba(108, 92, 231, 0.15);
+                top: -100px;
+                left: -100px;
+                animation-duration: 25s;
+            }
+            .orb-2 {
+                width: 300px;
+                height: 300px;
+                background: rgba(0, 191, 166, 0.15);
+                bottom: -50px;
+                right: -50px;
+                animation-duration: 18s;
+                animation-delay: -8s;
+            }
 
-        /* ── Themed Back Button ── */
-        .btn-back {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-            padding: 10px 20px;
-            background: rgba(12, 12, 18, 0.65);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            color: #fff;
-            font-family: 'Outfit', sans-serif;
-            font-weight: 500;
-            font-size: 14px;
-            border-radius: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: var(--transition);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            animation: slideIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
-        }
+            @keyframes orb-drift {
+                0% {
+                    transform: translate(0, 0) scale(1);
+                }
+                100% {
+                    transform: translate(30px, 40px) scale(1.1);
+                }
+            }
 
-        .btn-back:hover {
-            border-color: rgba(0, 191, 166, 0.4);
-            background: rgba(0, 191, 166, 0.1);
-            color: var(--primary);
-            box-shadow: 0 8px 25px rgba(0, 191, 166, 0.2);
-        }
+            /* ── Themed Back Button ── */
+            .btn-back {
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 1000;
+                padding: 10px 20px;
+                background: rgba(12, 12, 18, 0.65);
+                backdrop-filter: blur(24px) saturate(180%);
+                -webkit-backdrop-filter: blur(24px) saturate(180%);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                color: #fff;
+                font-family: 'Outfit', sans-serif;
+                font-weight: 500;
+                font-size: 14px;
+                border-radius: 12px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: var(--transition);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                animation: slideIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+            }
 
-        .btn-back i {
-            font-size: 16px;
-            transition: transform 0.3s ease;
-        }
+            .btn-back:hover {
+                border-color: rgba(0, 191, 166, 0.4);
+                background: rgba(0, 191, 166, 0.1);
+                color: var(--primary);
+                box-shadow: 0 8px 25px rgba(0, 191, 166, 0.2);
+            }
 
-        .btn-back:hover i {
-            transform: translateX(-4px); /* Pushes arrow left slightly on hover */
-        }
+            .btn-back i {
+                font-size: 16px;
+                transition: transform 0.3s ease;
+            }
 
-        @keyframes slideIn { 
-            from { opacity: 0; transform: translateX(-20px); } 
-            to { opacity: 1; transform: none; } 
-        }
+            .btn-back:hover i {
+                transform: translateX(-4px); /* Pushes arrow left slightly on hover */
+            }
 
-    </style>
-</head>
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateX(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: none;
+                }
+            }
+        </style>
+    </head>
 
-<body>
+    <body>
+        <div class="bg-mesh"></div>
+        <div class="bg-grid"></div>
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
 
-    <div class="bg-mesh"></div>
-    <div class="bg-grid"></div>
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
+        <button class="btn-back" onclick="window.location.href = '../index.html'">
+            <i class="bi bi-arrow-left"></i> Back to 3D View
+        </button>
 
-    <button class="btn-back" onclick="window.location.href='../index.html'">
-        <i class="bi bi-arrow-left"></i> Back to 3D View
-    </button>
-
-    <script type="module" src="./src/main.js"></script>
-
-</body>
-
+        <script type="module" src="./src/main.js"></script>
+    </body>
 </html>

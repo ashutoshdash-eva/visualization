@@ -5,51 +5,43 @@ import { buildFrame } from './objects/Frame';
 import { buildBeads } from './objects/Bead';
 import { buildGlass } from './objects/Glass';
 import { setupSelection } from './interaction/selection';
-import { buildHandle } from './objects/Handle';
-import { state, frameW } from './utils/constants';
+import { buildHandle } from './objects/handle';
+import { state, frameProfileWidth } from './utils/constants';
+import { disposeTree } from './utils/dispose';
 
 let handleRoot;
 let outsideClone;
 
-function disposeTree(root) {
-    root.traverse(o => {
-        if (o.geometry) o.geometry.dispose();
-        if (o.material) {
-            if (Array.isArray(o.material)) o.material.forEach(m => m.dispose());
-            else o.material.dispose();
-        }
-    });
-}
-
 function cloneRootForOutside(root) {
     const clone = root.clone(true);
-    clone.traverse(o => {
-        if (o.isMesh && o.material) o.material = o.material.clone();
+    clone.traverse((object) => {
+        if (object.isMesh && object.material) object.material = object.material.clone();
     });
     return clone;
 }
 
 function applyViewType(root, viewType) {
-    root.traverse(o => {
-        if (!o.isMesh || !o.material) return;
-        const baseColor = o.userData.baseColor || ('#' + o.material.color.getHexString());
-        o.userData.baseColor = baseColor;
-        const prev = o.material;
-        o.material = viewType === 'realistic'
-            ? new THREE.MeshPhysicalMaterial({
-                color: baseColor,
-                metalness: 0.95,
-                roughness: 0.05,
-                clearcoat: 1.0,
-                clearcoatRoughness: 0.05,
-                reflectivity: 0.9
-            })
-            : new THREE.MeshStandardMaterial({
-                color: baseColor,
-                metalness: 0.3,
-                roughness: 0.5
-            });
-        prev.dispose();
+    root.traverse((object) => {
+        if (!object.isMesh || !object.material) return;
+        const baseColor = object.userData.baseColor || '#' + object.material.color.getHexString();
+        object.userData.baseColor = baseColor;
+        const previousMaterial = object.material;
+        object.material =
+            viewType === 'realistic'
+                ? new THREE.MeshPhysicalMaterial({
+                      color: baseColor,
+                      metalness: 0.95,
+                      roughness: 0.05,
+                      clearcoat: 1.0,
+                      clearcoatRoughness: 0.05,
+                      reflectivity: 0.9,
+                  })
+                : new THREE.MeshStandardMaterial({
+                      color: baseColor,
+                      metalness: 0.3,
+                      roughness: 0.5,
+                  });
+        previousMaterial.dispose();
     });
 }
 
@@ -80,13 +72,32 @@ export function applyHandleTransforms() {
     if (!handleRoot) return;
     const { side, orientation, placement, viewType, width, height, ghh } = state;
 
-    let posX=0, posY=0, rotZ=0;
+    let posX, posY, rotZ;
     switch (side) {
-        case 'right': posX = width-15; posY = ghh; rotZ = 0; break;
-        case 'left': posX = 15; posY = ghh; rotZ = 0; break;
-        case 'top': posX = ghh; posY = height-15; rotZ = Math.PI / 2; break;
-        case 'bottom': posX = ghh; posY = 15; rotZ = 3*Math.PI / 2; break;
-        default: posX = width; posY = ghh; rotZ = 0;
+        case 'right':
+            posX = width - 15;
+            posY = ghh;
+            rotZ = 0;
+            break;
+        case 'left':
+            posX = 15;
+            posY = ghh;
+            rotZ = 0;
+            break;
+        case 'top':
+            posX = ghh;
+            posY = height - 15;
+            rotZ = Math.PI / 2;
+            break;
+        case 'bottom':
+            posX = ghh;
+            posY = 15;
+            rotZ = (3 * Math.PI) / 2;
+            break;
+        default:
+            posX = width;
+            posY = ghh;
+            rotZ = 0;
     }
     handleRoot.position.set(posX, posY, 0);
     handleRoot.rotation.z = rotZ;
@@ -95,8 +106,11 @@ export function applyHandleTransforms() {
 
     if (outsideClone) {
         scene.remove(outsideClone);
-        outsideClone.traverse(o => {
-            if (o.isMesh && o.material) o.material.dispose();
+        // Only the materials are cloned for the outside copy; its geometry is
+        // shared with handleRoot, so dispose materials ONLY here (not geometry,
+        // and not via disposeTree) to avoid freeing geometry still in use.
+        outsideClone.traverse((object) => {
+            if (object.isMesh && object.material) object.material.dispose();
         });
         outsideClone = null;
     }
@@ -106,13 +120,13 @@ export function applyHandleTransforms() {
         handleRoot.position.z = 0;
     } else if (placement === 'outside') {
         handleRoot.scale.set(-orientScale, 1, -1);
-        handleRoot.position.z = -frameW;
+        handleRoot.position.z = -frameProfileWidth;
     } else if (placement === 'both') {
         handleRoot.scale.set(orientScale, 1, 1);
         handleRoot.position.z = 0;
         outsideClone = cloneRootForOutside(handleRoot);
         outsideClone.scale.set(-orientScale, 1, -1);
-        outsideClone.position.set(posX, posY, -frameW);
+        outsideClone.position.set(posX, posY, -frameProfileWidth);
         outsideClone.rotation.z = rotZ;
         scene.add(outsideClone);
     }
@@ -127,9 +141,6 @@ buildBeads();
 buildGlass();
 setupSelection();
 rebuildHandle();
-
-// const grdHlp = new THREE.GridHelper(500, 500);
-// scene.add(grdHlp);
 
 function animate() {
     requestAnimationFrame(animate);

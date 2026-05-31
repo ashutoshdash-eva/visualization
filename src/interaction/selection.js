@@ -11,8 +11,8 @@ const originalFrameColor = new THREE.Color(COLORS.frame);
 const originalBeadColor = new THREE.Color(COLORS.bead);
 
 function resetColors() {
-    frameMeshes.forEach(mesh => mesh.material.color.set(originalFrameColor));
-    beadMeshes.forEach(mesh => mesh.material.color.set(originalBeadColor));
+    frameMeshes.forEach((mesh) => mesh.material.color.set(originalFrameColor));
+    beadMeshes.forEach((mesh) => mesh.material.color.set(originalBeadColor));
 }
 
 export function setupSelection() {
@@ -22,10 +22,7 @@ export function setupSelection() {
 
         raycaster.setFromCamera(mouse, camera);
 
-        const intersects = raycaster.intersectObjects([
-            ...frameMeshes,
-            ...beadMeshes
-        ]);
+        const intersects = raycaster.intersectObjects([...frameMeshes, ...beadMeshes]);
 
         if (intersects.length === 0) {
             resetColors();
@@ -41,18 +38,17 @@ export function setupSelection() {
         }
 
         if (frameMeshes.includes(clickedMesh)) {
-            frameMeshes.forEach(mesh => {
+            frameMeshes.forEach((mesh) => {
                 mesh.material.color.set(mesh === clickedMesh ? COLORS.highlight : COLORS.secondary);
             });
-            beadMeshes.forEach(mesh => {
+            beadMeshes.forEach((mesh) => {
                 mesh.material.color.set(originalBeadColor);
             });
-
         } else if (beadMeshes.includes(clickedMesh)) {
-            beadMeshes.forEach(mesh => {
+            beadMeshes.forEach((mesh) => {
                 mesh.material.color.set(mesh === clickedMesh ? COLORS.highlight : COLORS.secondary);
             });
-            frameMeshes.forEach(mesh => {
+            frameMeshes.forEach((mesh) => {
                 mesh.material.color.set(originalFrameColor);
             });
         }
